@@ -67,7 +67,7 @@
 
     .tickets {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+      grid-template-columns: repeat(10, 1fr);
       gap: 8px;
       margin-bottom: 16px;
     }
@@ -92,12 +92,12 @@
     }
 
     /* 등급별 색 */
-    .grade-1 { background:#FFD54F; border-color:#FFB300; }
-    .grade-2 { background:#CFD8DC; border-color:#90A4AE; }
-    .grade-3 { background:#FFCCBC; border-color:#FF8A65; }
-    .grade-4 { background:#C5E1A5; border-color:#8BC34A; }
-    .grade-5 { background:#B3E5FC; border-color:#4FC3F7; }
-    .grade-6 { background:#E0E0E0; border-color:#BDBDBD; }
+    .grade-1 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-2 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-3 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-4 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-5 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-6 { background:#B6D7A8; border-color:#B6D7A8; }
 
     .result-box {
       min-height: 60px;
@@ -120,7 +120,7 @@
       margin-bottom: 4px;
     }
 
-    /* 팝업 */
+    /* 공통 팝업 오버레이 */
     .popup-overlay {
       position: fixed;
       inset: 0;
@@ -130,18 +130,20 @@
       justify-content: center;
       z-index: 1000;
     }
+
+    /* 결과 팝업 */
     .popup {
       background: #fff;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 32px 28px 24px;
-      max-width: 360px;
+      max-width: 560px;
       width: calc(100% - 40px);
       text-align: center;
       box-shadow: 0 18px 45px rgba(0,0,0,0.35);
     }
     .popup-title {
-      font-size: 26px;
-      margin-bottom: 8px;
+      font-size: 60px;
+      margin-bottom: 20px;
       font-weight: 700;
     }
     .popup-message {
@@ -156,6 +158,46 @@
       color:#fff;
       font-size:14px;
       cursor:pointer;
+    }
+
+    /* 확인 팝업 */
+    .confirm-popup {
+      background: #fff;
+      border-radius: 14px;
+      padding: 40px 24px 30px;
+      max-width: 620px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+    }
+    .confirm-title {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .confirm-message {
+      font-size: 25px;
+      margin-bottom: 18px;
+    }
+    .confirm-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .confirm-btn {
+      padding: 20px 40px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .confirm-yes {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .confirm-no {
+      background: #e0e0e0;
+      color: #333;
     }
 
     @media (max-width: 600px) {
@@ -191,7 +233,7 @@
     </div>
   </div>
 
-  <!-- 팝업 -->
+  <!-- 결과 팝업 -->
   <div class="popup-overlay" id="popupOverlay">
     <div class="popup">
       <div class="popup-title" id="popupTitle"></div>
@@ -200,22 +242,35 @@
     </div>
   </div>
 
+  <!-- 선택 확인 팝업 -->
+  <div class="popup-overlay" id="confirmOverlay">
+    <div class="confirm-popup">
+      <div class="confirm-title">번호 선택</div>
+      <div class="confirm-message" id="confirmMessage"></div>
+      <div class="confirm-buttons">
+        <button class="confirm-btn confirm-no" onclick="cancelSelect()">아니오</button>
+        <button class="confirm-btn confirm-yes" onclick="confirmSelect()">예</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const TOTAL_TICKETS = 600;
     const PAGE_SIZE = 100;
 
-    // 등수별 개수 (총합이 600이 되도록 맞춰 둬야 함)
+    // 등수별 개수 (합이 600이 되도록 맞추기)
     const gradeCounts = {
       1: 4,
       2: 9,
       3: 24,
       4: 36,
       5: 227,
-      6: 300   // 현재 합계는 600이 아니라 600에 맞게 조정이 필요하면 여기 숫자를 바꿔줘야 함
+      6: 300
     };
 
-    let tickets = [];     // { index:0~599, grade:1~6, used:false }
-    let currentPage = 1;  // 1~6
+    let tickets = [];      // { index:0~599, grade:1~6, used:false }
+    let currentPage = 1;   // 1~6
+    let pendingIndex = null; // 확인 대기 중인 티켓 인덱스
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -245,7 +300,7 @@
       for (let i = 0; i < TOTAL_TICKETS; i++) {
         tickets.push({
           index: i,
-          grade: gradeList[i] || 6, // 부족하면 6등으로 채움
+          grade: gradeList[i] || 6,
           used: false
         });
       }
@@ -267,7 +322,7 @@
         btn.textContent = (t.index + 1); // 1~600 표시
 
         if (!t.used) {
-          btn.addEventListener('click', () => selectTicket(i));
+          btn.addEventListener('click', () => handleTicketClick(i));
         }
         container.appendChild(btn);
       }
@@ -361,7 +416,7 @@
           document.getElementById('resultBox').textContent =
             data.resultText || '복권을 선택해 보세요.';
           renderPage();
-          saveState(); // localStorage에도 반영
+          saveState();
           alert('기록을 불러왔습니다.');
         } catch (err) {
           alert('기록 파일을 읽는 중 오류가 발생했습니다.');
@@ -370,52 +425,64 @@
       reader.readAsText(file, 'utf-8');
     }
 
-    // ---- 게임 동작 ----
-    function selectTicket(i) {
+    // ---- 티켓 선택 흐름 (확인 팝업 포함) ----
+    function handleTicketClick(i) {
       const t = tickets[i];
       if (t.used) return;
-    
-      // 확인창 추가
-      const ok = confirm((t.index + 1) + '번 복권을 선택할까요?');
-      if (!ok) return;
-    
+
+      pendingIndex = i;
+      const msg = document.getElementById('confirmMessage');
+      msg.textContent = (t.index + 1) + '번 복권을 선택할까요?';
+
+      document.getElementById('confirmOverlay').style.display = 'flex';
+    }
+
+    function cancelSelect() {
+      pendingIndex = null;
+      document.getElementById('confirmOverlay').style.display = 'none';
+    }
+
+    function confirmSelect() {
+      if (pendingIndex === null) return;
+      const i = pendingIndex;
+      pendingIndex = null;
+      document.getElementById('confirmOverlay').style.display = 'none';
+
+      const t = tickets[i];
+      if (t.used) return;
+
       t.used = true;
-    
+
       const grade = t.grade;
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
-    
+
       resultBox.textContent =
         (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
-    
+
       showPopup(gradeLabel);
       renderPage();
       saveState();
     }
-    
+
+    // ---- 결과 팝업 ----
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
 
       if (gradeLabel === '1등') {
-        title.textContent = '🎉 축하합니다!';
-        msg.textContent = '1등에 당첨되셨습니다!';
+        title.textContent = '1등!';
       } else if (gradeLabel === '2등') {
-        title.textContent = '🥳 축하합니다!';
-        msg.textContent = '2등에 당첨되셨습니다!';
+        title.textContent = '2등!';
       } else if (gradeLabel === '3등') {
-        title.textContent = '😄 당첨!';
-        msg.textContent = '3등에 당첨되셨습니다.';
+        title.textContent = '3등!';
       } else if (gradeLabel === '4등') {
-        title.textContent = '😊 축하드려요';
-        msg.textContent = '4등에 당첨되셨습니다.';
+        title.textContent = '4등';
       } else if (gradeLabel === '5등') {
-        title.textContent = '괜찮은 결과!';
-        msg.textContent = '5등에 당첨되셨습니다.';
+        title.textContent = '5등';
       } else {
-        title.textContent = '다음 기회에';
-        msg.textContent = '6등입니다. 그래도 수고하셨어요!';
+        title.textContent = '6등';
       }
 
       overlay.style.display = 'flex';
@@ -453,7 +520,7 @@
       });
 
       document.getElementById('resetBtn').addEventListener('click', () => {
-        localStorage.removeItem(STORAGE_KEY); // 완전 초기화
+        localStorage.removeItem(STORAGE_KEY);
         resetGame();
       });
 
@@ -468,7 +535,13 @@
         if (file) importStateFromFile(file);
       });
 
-      // 저장된 상태 있으면 사용, 없으면 새로 생성
+      // 결과 팝업 바깥(어두운 영역) 클릭 시 닫기
+      document.getElementById('popupOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'popupOverlay') {
+          closePopup();
+        }
+      });
+
       if (!loadState()) {
         resetGame();
       } else {
