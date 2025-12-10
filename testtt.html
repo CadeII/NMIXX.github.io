@@ -343,8 +343,6 @@
     
       const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
     
-      // 페이지 텍스트: "1 / 30" → "1"만 표시(원하면 그대로 1 / 30 유지해도 됨)
-      document.getElementById('pageText').textContent = currentPage;
     
       // 무한 순환형이므로 disabled는 사용하지 않아도 되지만,
       // 항상 활성 상태로 두기 위해 disabled 해제
@@ -492,20 +490,24 @@
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
     
-      if (gradeLabel === '1등') {
-        title.textContent = '1등!';
-      } else if (gradeLabel === '2등') {
-        title.textContent = '2등!';
-      } else if (gradeLabel === '3등') {
-        title.textContent = '3등!';
-      } else if (gradeLabel === '4등') {
-        title.textContent = '4등';
-      } else if (gradeLabel === '5등') {
-        title.textContent = '5등';
-      } else {
-        title.textContent = '6등';
-      }
-    
+        if (gradeLabel === '1등') {
+          title.textContent = '1등!';
+        } else if (gradeLabel === '2등') {
+          title.textContent = '2등!';
+        } else if (gradeLabel === '3등') {
+          title.textContent = '3등!';
+        } else if (gradeLabel === '4등') {
+          title.textContent = '4등';
+        } else if (gradeLabel === '5등') {
+          title.textContent = '5등';
+        } else if (gradeLabel === '6등') {
+          title.textContent = '6등';
+        } else if (gradeLabel === '또뽑기') {
+          title.textContent = '또뽑기';
+        } else {
+          title.textContent = '';
+        }
+        
       // 메시지는 필요 시 추가
       msg.textContent = '';
     
