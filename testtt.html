@@ -254,7 +254,6 @@
    <script>
     const TOTAL_TICKETS = 800;   // ← 이 줄이 지금 빠져 있어서 다 깨진 상태
     const BATCH_SIZE = 10;
-    const INITIAL_ROWS = 8;
 
     // 1~6등 + 7등(또 뽑기 200개)
     const gradeCounts = {
@@ -404,8 +403,8 @@
     function rerenderAll() {
       const container = document.getElementById('ticketsContainer');
       container.innerHTML = '';
-      const initialCount = BATCH_SIZE * INITIAL_ROWS; // 80개
-      for (let i = 0; i < initialCount; i++) {
+      // 처음에는 10개만 표시
+      for (let i = 0; i < BATCH_SIZE; i++) {
         appendNextTicket();
       }
     }
@@ -414,37 +413,34 @@
 
 
      
-    // 다음 인덱스 하나에 해당하는 버튼을 만들어 추가
+    // 한 칸씩 생성
     function appendNextTicket() {
       const container = document.getElementById('ticketsContainer');
       const idx = renderCursor % TOTAL_TICKETS;
       const t = tickets[idx];
-
+    
       const btn = document.createElement('button');
       let cls = 'ticket';
-      if (t.used) cls += ' used grade-' + t.grade;
+      if (t.used) cls += ' used grade-' + t.grade;   // 뽑은 건 등급 색 + 흐리게
       btn.className = cls;
-
-      // 번호는 표시하지 않음
+    
+      // 번호는 표시 안 함
       btn.textContent = '';
-
+    
       if (!t.used) {
         btn.addEventListener('click', () => handleTicketClick(idx));
       }
-
+    
       container.appendChild(btn);
       renderCursor = (renderCursor + 1) % TOTAL_TICKETS;
     }
-
-    // 스크롤이 아래 가까이 가면 다음 10개를 추가
     
+    // 스크롤 아래 도달 시 10개 추가
     function setupInfiniteScroll() {
       const wrapper = document.getElementById('ticketsWrapper');
       wrapper.addEventListener('scroll', () => {
-        const nearBottom =
-          wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 10;
-        if (nearBottom) {
-          // 바닥 근처면 10개만 더 추가
+        const { scrollTop, clientHeight, scrollHeight } = wrapper;
+        if (scrollTop + clientHeight >= scrollHeight - 2) { // 거의 바닥
           for (let i = 0; i < BATCH_SIZE; i++) {
             appendNextTicket();
           }
