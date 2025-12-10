@@ -40,19 +40,6 @@
       color: #555;
     }
 
-    .summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 16px;
-      font-size: 14px;
-      margin-bottom: 16px;
-    }
-    .summary span {
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: #f0f4f5;
-    }
-
     .page-info {
       display: flex;
       justify-content: space-between;
@@ -126,6 +113,13 @@
       padding: 8px;
     }
 
+    .tool-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
     /* 팝업 */
     .popup-overlay {
       position: fixed;
@@ -173,10 +167,12 @@
 <body>
   <div class="container">
     <h1>Lucky Draw</h1>
-    <p class="desc">한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.</p>
+    <p class="desc">
+      한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.
+    </p>
 
     <div class="page-info">
-      <div>현재 페이지: <span id="pageText">1 / 5</span></div>
+      <div>현재 페이지: <span id="pageText">1 / 6</span></div>
       <div class="page-buttons">
         <button class="btn" id="prevBtn">이전 100개</button>
         <button class="btn" id="nextBtn">다음 100개</button>
@@ -187,7 +183,12 @@
 
     <div class="result-box" id="resultBox">복권을 선택해 보세요.</div>
 
-    <button class="btn" id="resetBtn">전체 다시 섞기</button>
+    <div class="tool-buttons">
+      <button class="btn" id="resetBtn">전체 다시 섞기</button>
+      <button class="btn" id="exportBtn">기록 파일로 저장</button>
+      <button class="btn" id="importBtn">기록 파일 불러오기</button>
+      <input type="file" id="importInput" style="display:none" accept="application/json">
+    </div>
   </div>
 
   <!-- 팝업 -->
@@ -203,18 +204,18 @@
     const TOTAL_TICKETS = 600;
     const PAGE_SIZE = 100;
 
-    // 등수별 개수
+    // 등수별 개수 (총합이 600이 되도록 맞춰 둬야 함)
     const gradeCounts = {
       1: 4,
       2: 9,
       3: 24,
       4: 36,
       5: 227,
-      6: 300
+      6: 300   // 현재 합계는 600이 아니라 600에 맞게 조정이 필요하면 여기 숫자를 바꿔줘야 함
     };
 
-    let tickets = [];     // { index:0~499, grade:1~6, used:false }
-    let currentPage = 1;  // 1~5
+    let tickets = [];     // { index:0~599, grade:1~6, used:false }
+    let currentPage = 1;  // 1~6
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -236,7 +237,7 @@
       });
 
       if (gradeList.length !== TOTAL_TICKETS) {
-        console.warn('등수 개수 합이 600이 아닙니다. 실제:', gradeList.length);
+        console.warn('등수 개수 합이 TOTAL_TICKETS와 다릅니다. 실제:', gradeList.length);
       }
 
       shuffle(gradeList);
@@ -244,7 +245,7 @@
       for (let i = 0; i < TOTAL_TICKETS; i++) {
         tickets.push({
           index: i,
-          grade: gradeList[i],
+          grade: gradeList[i] || 6, // 부족하면 6등으로 채움
           used: false
         });
       }
@@ -326,6 +327,49 @@
       }
     }
 
+    // ---- JSON 파일로 내보내기 / 불러오기 ----
+    function downloadStateFile() {
+      const state = {
+        tickets,
+        currentPage,
+        resultText: document.getElementById('resultBox').textContent,
+        savedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lotto600_state.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importStateFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.tickets || !Array.isArray(data.tickets)) {
+            alert('잘못된 기록 파일입니다.');
+            return;
+          }
+          tickets = data.tickets;
+          currentPage = data.currentPage || 1;
+          document.getElementById('resultBox').textContent =
+            data.resultText || '복권을 선택해 보세요.';
+          renderPage();
+          saveState(); // localStorage에도 반영
+          alert('기록을 불러왔습니다.');
+        } catch (err) {
+          alert('기록 파일을 읽는 중 오류가 발생했습니다.');
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
     // ---- 게임 동작 ----
     function selectTicket(i) {
       const t = tickets[i];
@@ -405,9 +449,19 @@
       });
 
       document.getElementById('resetBtn').addEventListener('click', () => {
-        // 완전 초기화 원하면 localStorage 지우기
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEY); // 완전 초기화
         resetGame();
+      });
+
+      document.getElementById('exportBtn').addEventListener('click', downloadStateFile);
+
+      document.getElementById('importBtn').addEventListener('click', () => {
+        document.getElementById('importInput').click();
+      });
+
+      document.getElementById('importInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) importStateFromFile(file);
       });
 
       // 저장된 상태 있으면 사용, 없으면 새로 생성
