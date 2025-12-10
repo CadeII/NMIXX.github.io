@@ -374,21 +374,29 @@
     function selectTicket(i) {
       const t = tickets[i];
       if (t.used) return;
-
+    
+      // 여기서 한 번 더 확인
+      const ok = confirm((t.index + 1) + '번 복권을 선택할까요?');
+      if (!ok) return;
+    
       t.used = true;
-
+    
       const grade = t.grade;
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
-
+    
       resultBox.textContent =
         (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
-
+    
       showPopup(gradeLabel);
       renderPage();
       saveState();
     }
 
+
+
+
+    
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
