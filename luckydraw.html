@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>500개 복권 게임</title>
+  <title>럭키 드로우우</title>
   <style>
     :root {
       --color-primary: #32B8C6;
@@ -172,7 +172,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>500개 복권 게임</h1>
+    <h1>럭키 드로우</h1>
     <p class="desc">한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.</p>
 
     <div class="summary">
@@ -182,7 +182,7 @@
       <span>4등 36개</span>
       <span>5등 227개</span>
       <span>6등 300개</span>
-      <span>총 500개</span>
+      <span>총 600개</span>
     </div>
 
     <div class="page-info">
@@ -197,7 +197,7 @@
 
     <div class="result-box" id="resultBox">복권을 선택해 보세요.</div>
 
-    <button class="btn" id="resetBtn">다시 섞기</button>
+    <button class="btn" id="resetBtn">전체 다시 섞기</button>
   </div>
 
   <!-- 팝업 -->
@@ -238,7 +238,6 @@
       tickets = [];
       const gradeList = [];
 
-      // grade별로 개수만큼 push
       Object.keys(gradeCounts).forEach(g => {
         const count = gradeCounts[g];
         for (let i = 0; i < count; i++) {
@@ -246,7 +245,6 @@
         }
       });
 
-      // 혹시 합이 500이 아닐 경우 대비
       if (gradeList.length !== TOTAL_TICKETS) {
         console.warn('등수 개수 합이 500이 아닙니다. 실제:', gradeList.length);
       }
@@ -272,7 +270,9 @@
       for (let i = start; i < end; i++) {
         const t = tickets[i];
         const btn = document.createElement('button');
-        btn.className = 'ticket' + (t.used ? ' used grade-' + t.grade : '');
+        let cls = 'ticket';
+        if (t.used) cls += ' used grade-' + t.grade;
+        btn.className = cls;
         btn.textContent = (t.index + 1); // 1~500 표시
 
         if (!t.used) {
@@ -301,6 +301,42 @@
       }
     }
 
+    // ---- 상태 저장 / 불러오기 (localStorage) ----
+    const STORAGE_KEY = 'lotto500_state_v1';
+
+    function saveState() {
+      const state = {
+        tickets,
+        currentPage,
+        resultText: document.getElementById('resultBox').textContent
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('상태 저장 실패:', e);
+      }
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+
+      try {
+        const state = JSON.parse(saved);
+        if (!state.tickets || !Array.isArray(state.tickets)) return false;
+
+        tickets = state.tickets;
+        currentPage = state.currentPage || 1;
+        document.getElementById('resultBox').textContent =
+          state.resultText || '복권을 선택해 보세요.';
+        return true;
+      } catch (e) {
+        console.warn('상태 불러오기 실패:', e);
+        return false;
+      }
+    }
+
+    // ---- 게임 동작 ----
     function selectTicket(i) {
       const t = tickets[i];
       if (t.used) return;
@@ -315,8 +351,8 @@
         (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
 
       showPopup(gradeLabel);
-
-      renderPage(); // 색깔, 사용 상태 갱신
+      renderPage();
+      saveState();
     }
 
     function showPopup(gradeLabel) {
@@ -356,14 +392,16 @@
       currentPage = 1;
       document.getElementById('resultBox').textContent = '복권을 선택해 보세요.';
       renderPage();
+      saveState();
     }
 
-    // 페이지 이동 버튼
+    // ---- 초기 설정 ----
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('prevBtn').addEventListener('click', () => {
         if (currentPage > 1) {
           currentPage--;
           renderPage();
+          saveState();
         }
       });
 
@@ -372,13 +410,22 @@
         if (currentPage < maxPage) {
           currentPage++;
           renderPage();
+          saveState();
         }
       });
 
-      document.getElementById('resetBtn').addEventListener('click', resetGame);
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        // 완전 초기화 원하면 localStorage 지우기
+        localStorage.removeItem(STORAGE_KEY);
+        resetGame();
+      });
 
-      // 초기화
-      resetGame();
+      // 저장된 상태 있으면 사용, 없으면 새로 생성
+      if (!loadState()) {
+        resetGame();
+      } else {
+        renderPage();
+      }
     });
   </script>
 </body>
