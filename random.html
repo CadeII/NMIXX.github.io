@@ -450,7 +450,7 @@
         function showWinnerPopup() {
             const popup = document.getElementById('popupOverlay');
             const message = document.getElementById('popupMessage');
-            message.textContent = '축하합니다!\n당첨입니다!';
+            message.innerHTML = '축하합니다!<br>당첨입니다!';
             message.className = 'popup-message winner';
             popup.style.display = 'flex';
             document.getElementById('resetBtn').style.display = 'block';
@@ -459,7 +459,7 @@
         function showLoserPopup() {
             const popup = document.getElementById('popupOverlay');
             const message = document.getElementById('popupMessage');
-            message.textContent = '아쉬워요.\n다음기회에!';
+            message.innerHTML = '아쉬워요.<br>다음기회에!';
             message.className = 'popup-message loser';
             popup.style.display = 'flex';
         }
