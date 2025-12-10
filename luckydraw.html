@@ -375,7 +375,7 @@
       const t = tickets[i];
       if (t.used) return;
     
-      // 여기서 한 번 더 확인
+      // 확인창 추가
       const ok = confirm((t.index + 1) + '번 복권을 선택할까요?');
       if (!ok) return;
     
@@ -392,10 +392,6 @@
       renderPage();
       saveState();
     }
-
-
-
-
     
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
