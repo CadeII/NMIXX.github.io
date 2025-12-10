@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뽑기 게임</title>
+    <style>
+        :root {
+            --color-primary: #32B8C6;
+            --color-primary-hover: #2DA67A;
+            --color-primary-active: #1A6873;
+            --color-text: #134252;
+            --color-background: #FCFCF9;
+            --color-surface: #FFFFFE;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #208B8D;
+            --color-error: #C0152F;
+            --focus-ring: 0 0 0 3px rgba(33, 128, 141, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: var(--color-surface);
+            border-radius: 12px;
+            border: 1px solid var(--color-border);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 30px 0;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .control-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(94, 82, 64, 0.03);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="number"] {
+            padding: 10px 12px;
+            font-size: 16px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            transition: border-color 150ms ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: var(--focus-ring);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms ease;
+            background-color: var(--color-primary);
+            color: #FCFCF9;
+        }
+
+        .btn:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .btn:active {
+            background-color: var(--color-primary-active);
+        }
+
+        .btn:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .game-section {
+            text-align: center;
+        }
+
+        .info-text {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: var(--color-text);
+        }
+
+        .boxes-container {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        }
+
+        .box {
+            padding: 20px;
+            border: 2px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-background);
+            cursor: pointer;
+            transition: all 150ms ease;
+            font-size: 14px;
+            font-weight: 600;
+            user-select: none;
+        }
+
+        .box:hover:not(:disabled) {
+            border-color: var(--color-primary);
+            transform: scale(1.05);
+        }
+
+        .box:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .box:focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .box:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .box.revealed {
+            background-color: rgba(94, 82, 64, 0.1);
+            border-color: var(--color-border);
+        }
+
+        .box.revealed.winner {
+            background-color: rgba(32, 139, 141, 0.2);
+            border-color: var(--color-success);
+            color: var(--color-success);
+            font-weight: 700;
+        }
+
+        .box.revealed.loser {
+            background-color: rgba(192, 21, 47, 0.1);
+            border-color: var(--color-error);
+            color: var(--color-error);
+        }
+
+        .result-section {
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: rgba(94, 82, 64, 0.03);
+            border: 2px solid var(--color-border);
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .result-message {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .result-message.winner {
+            color: var(--color-success);
+            font-size: 28px;
+        }
+
+        .result-message.loser {
+            color: var(--color-error);
+            font-size: 18px;
+        }
+
+        .result-message.neutral {
+            color: var(--color-text);
+            font-size: 16px;
+        }
+
+        .continue-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: var(--color-primary);
+            color: #FCFCF9;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--color-primary);
+            color: #FCFCF9;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .boxes-container {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                gap: 10px;
+            }
+
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎰 뽑기 게임</h1>
+
+        <div class="control-section">
+            <div class="control-group">
+                <div class="form-group">
+                    <label for="numBoxes">뽑기 개수:</label>
+                    <input type="number" id="numBoxes" min="1" max="100" value="10">
+                </div>
+                <button class="btn" onclick="initializeGame()">게임 시작</button>
+            </div>
+        </div>
+
+        <div class="game-section">
+            <p class="info-text">하나를 선택하세요! 1개만 당첨입니다 🎁</p>
+            <div class="boxes-container" id="boxesContainer"></div>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <div class="result-message" id="resultMessage"></div>
+            </div>
+
+            <button class="btn reset-btn" id="resetBtn" onclick="resetGame()" style="display: none;">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        let winningIndex = -1;
+        let gameStarted = false;
+        let numBoxes = 10;
+        let gameEnded = false;
+
+        function initializeGame() {
+            numBoxes = parseInt(document.getElementById('numBoxes').value);
+            
+            if (isNaN(numBoxes) || numBoxes < 1) {
+                alert('1 이상의 숫자를 입력해주세요.');
+                return;
+            }
+
+            if (numBoxes > 100) {
+                alert('100 이하의 숫자를 입력해주세요.');
+                return;
+            }
+
+            gameStarted = true;
+            gameEnded = false;
+            winningIndex = Math.floor(Math.random() * numBoxes);
+
+            const container = document.getElementById('boxesContainer');
+            container.innerHTML = '';
+
+            for (let i = 0; i < numBoxes; i++) {
+                const box = document.createElement('button');
+                box.className = 'box';
+                box.textContent = i + 1;
+                box.onclick = () => selectBox(i);
+                box.setAttribute('aria-label', `상자 ${i + 1}`);
+                container.appendChild(box);
+            }
+
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('numBoxes').disabled = true;
+        }
+
+        let feedbackOpen = false;
+
+        function selectBox(index) {
+            if (!gameStarted || gameEnded || feedbackOpen) {
+                return;
+            }
+
+            const box = document.querySelectorAll('.box')[index];
+            const resultSection = document.getElementById('resultSection');
+            const resultMessage = document.getElementById('resultMessage');
+
+            if (index === winningIndex) {
+                // 당첨!
+                box.classList.add('revealed', 'winner');
+                box.disabled = true;
+                resultMessage.textContent = '🎉 당첨! 축하합니다!';
+                resultMessage.className = 'result-message winner';
+                resultSection.style.display = 'flex';
+                document.getElementById('resetBtn').style.display = 'block';
+                gameEnded = true;
+            } else {
+                // 미당첨
+                box.classList.add('revealed', 'loser');
+                box.disabled = true;
+                feedbackOpen = true;
+                resultMessage.textContent = '😢 미당첨! 계속 도전하세요!';
+                resultMessage.className = 'result-message loser';
+                resultSection.style.display = 'flex';
+                
+                // 계속 버튼 추가
+                resultSection.innerHTML = `
+                    <div class="result-message loser">😢 미당첨! 계속 도전하세요!</div>
+                    <button class="btn continue-btn" onclick="closeFeedback()">계속</button>
+                `;
+            }
+        }
+
+        function closeFeedback() {
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('resultSection').innerHTML = `<div class="result-message" id="resultMessage"></div>`;
+            feedbackOpen = false;
+        }
+
+        function resetGame() {
+            document.getElementById('boxesContainer').innerHTML = '';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('resultSection').innerHTML = `<div class="result-message" id="resultMessage"></div>`;
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('numBoxes').disabled = false;
+            gameStarted = false;
+            gameEnded = false;
+            winningIndex = -1;
+            feedbackOpen = false;
+        }
+
+        // 초기 로드
+        window.addEventListener('load', () => {
+            document.getElementById('numBoxes').focus();
+        });
+    </script>
+</body>
+</html>
