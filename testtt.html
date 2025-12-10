@@ -20,7 +20,7 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 900px;
       margin: 0 auto;
       background: #ffffff;
       border-radius: 12px;
@@ -36,38 +36,47 @@
     .desc {
       text-align: center;
       font-size: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       color: #555;
     }
 
-    .info {
-      font-size: 13px;
-      color: #777;
-      margin-bottom: 10px;
-      text-align: center;
+    .page-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
     }
-
-    .tickets-wrapper {
-      border-radius: 10px;
-      border: 1px solid #e0e0e0;
-      background: #fafafa;
-      padding: 40px;
-      height: 360px;        /* max-height 말고 고정 height로 */
-      overflow-y: auto;     /* 세로 스크롤 강제 */
+    .page-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: default;
     }
 
     .tickets {
       display: grid;
-      grid-template-columns: repeat(10, 1fr); /* 항상 10개 */
-      gap: 6px;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
     }
-
     .ticket {
-      padding: 30px 0;
+      padding: 10px 4px;
       border-radius: 8px;
       border: 1px solid #d2d2d2;
       text-align: center;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       background: #fafafa;
       transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
@@ -79,28 +88,27 @@
     }
     .ticket.used {
       cursor: default;
-      opacity: 0.4;
+      opacity: 0.6;
     }
 
     /* 등급별 색 */
-    .grade-1 { background:#FFD54F; border-color:#FFB300; }
-    .grade-2 { background:#CFD8DC; border-color:#90A4AE; }
-    .grade-3 { background:#FFCCBC; border-color:#FF8A65; }
-    .grade-4 { background:#C5E1A5; border-color:#8BC34A; }
-    .grade-5 { background:#B3E5FC; border-color:#4FC3F7; }
-    .grade-6 { background:#E0E0E0; border-color:#BDBDBD; }
-    .grade-7 { background:#FFE0B2; border-color:#FFB74D; } /* 또 뽑기 */
+    .grade-1 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-2 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-3 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-4 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-5 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-6 { background:#B6D7A8; border-color:#B6D7A8; }
 
     .result-box {
-      min-height: 56px;
+      min-height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 8px;
       background: #f8f9fa;
       border: 1px dashed #ccc;
-      font-size: 14px;
-      margin: 12px 0;
+      font-size: 15px;
+      margin-bottom: 12px;
       text-align: center;
       padding: 8px;
     }
@@ -109,17 +117,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      justify-content: center;
-    }
-
-    .btn {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--color-primary);
-      background: var(--color-primary);
-      color: #fff;
-      font-size: 13px;
-      cursor: pointer;
+      margin-bottom: 4px;
     }
 
     /* 공통 팝업 오버레이 */
@@ -136,20 +134,20 @@
     /* 결과 팝업 */
     .popup {
       background: #fff;
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 32px 28px 24px;
-      max-width: 360px;
+      max-width: 560px;
       width: calc(100% - 40px);
       text-align: center;
       box-shadow: 0 18px 45px rgba(0,0,0,0.35);
     }
     .popup-title {
-      font-size: 24px;
-      margin-bottom: 8px;
+      font-size: 60px;
+      margin-bottom: 20px;
       font-weight: 700;
     }
     .popup-message {
-      font-size: 14px;
+      font-size: 15px;
       margin-bottom: 20px;
     }
     .popup button {
@@ -166,19 +164,19 @@
     .confirm-popup {
       background: #fff;
       border-radius: 14px;
-      padding: 24px 20px 18px;
-      max-width: 360px;
+      padding: 40px 24px 30px;
+      max-width: 620px;
       width: calc(100% - 40px);
       text-align: center;
       box-shadow: 0 14px 35px rgba(0,0,0,0.3);
     }
     .confirm-title {
-      font-size: 18px;
+      font-size: 30px;
       font-weight: 600;
       margin-bottom: 6px;
     }
     .confirm-message {
-      font-size: 14px;
+      font-size: 25px;
       margin-bottom: 18px;
     }
     .confirm-buttons {
@@ -187,7 +185,7 @@
       gap: 10px;
     }
     .confirm-btn {
-      padding: 6px 16px;
+      padding: 20px 40px;
       border-radius: 999px;
       border: none;
       font-size: 13px;
@@ -204,7 +202,7 @@
 
     @media (max-width: 600px) {
       .container { padding: 18px 16px 24px; }
-      .tickets-wrapper { height: 320px; }
+      .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
     }
   </style>
 </head>
@@ -212,15 +210,20 @@
   <div class="container">
     <h1>Lucky Draw</h1>
     <p class="desc">
-      한 번 뽑을 때마다 결과가 표시되고, 이미 뽑은 칸은 다시 뽑을 수 없습니다.
+      한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.
     </p>
-    <p class="info">화면에는 항상 10개만 보이며, 아래로 스크롤하면 다음 칸들이 계속 이어집니다.</p>
 
-    <div class="tickets-wrapper" id="ticketsWrapper">
-      <div class="tickets" id="ticketsContainer"></div>
+    <div class="page-info">
+      <div>현재 페이지: <span id="pageText">1 / 6</span></div>
+      <div class="page-buttons">
+        <button class="btn" id="prevBtn">이전 100개</button>
+        <button class="btn" id="nextBtn">다음 100개</button>
+      </div>
     </div>
 
-    <div class="result-box" id="resultBox">아래의 칸 중 하나를 선택해 보세요.</div>
+    <div class="tickets" id="ticketsContainer"></div>
+
+    <div class="result-box" id="resultBox">복권을 선택해 보세요.</div>
 
     <div class="tool-buttons">
       <button class="btn" id="resetBtn">전체 다시 섞기</button>
@@ -251,26 +254,24 @@
     </div>
   </div>
 
-   <script>
-    const TOTAL_TICKETS = 800;   // ← 이 줄이 지금 빠져 있어서 다 깨진 상태
-    const BATCH_SIZE = 10;
-
-    // 1~6등 + 7등(또 뽑기 200개)
+  <script>
+    const TOTAL_TICKETS = 600;
+    const PAGE_SIZE = 20; // 100 → 20으로 변경
+    
+    // 등수별 개수 (합이 600이 되도록 맞추기)
     const gradeCounts = {
       1: 4,
       2: 9,
       3: 24,
       4: 36,
       5: 227,
-      6: 300,
-      7: 200     // "또 뽑기"
+      6: 300
     };
-
-    let tickets = [];        // { index:0~799, grade:1~7, used:false }
-    let renderCursor = 0;    // 다음에 표시할 시작 index (0~799 순환)
-    let pendingIndex = null; // 확인 대기 중인 인덱스
-
-    // ---- 공통 유틸 ----
+    
+    let tickets = []; // { index:0~599, grade:1~6, used:false }
+    let currentPage = 1; // 1~30
+    let pendingIndex = null; // 확인 대기 중인 티켓 인덱스
+    
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -278,7 +279,68 @@
       }
       return array;
     }
-
+    
+    function initTickets() {
+      tickets = [];
+      const gradeList = [];
+    
+      Object.keys(gradeCounts).forEach(g => {
+        const count = gradeCounts[g];
+        for (let i = 0; i < count; i++) {
+          gradeList.push(parseInt(g, 10));
+        }
+      });
+    
+      if (gradeList.length !== TOTAL_TICKETS) {
+        console.warn('등수 개수 합이 TOTAL_TICKETS와 다릅니다. 실제:', gradeList.length);
+      }
+    
+      shuffle(gradeList);
+    
+      for (let i = 0; i < TOTAL_TICKETS; i++) {
+        tickets.push({
+          index: i,
+          grade: gradeList[i] || 6,
+          used: false
+        });
+      }
+    }
+    
+    function renderPage() {
+      const container = document.getElementById('ticketsContainer');
+      container.innerHTML = '';
+    
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, TOTAL_TICKETS);
+    
+      for (let i = start; i < end; i++) {
+        const t = tickets[i];
+        const btn = document.createElement('button');
+        let cls = 'ticket';
+        if (t.used) cls += ' used grade-' + t.grade;
+        btn.className = cls;
+    
+        // 1~600 번호 표시 제거
+        // btn.textContent = (t.index + 1);
+        btn.textContent = ''; // 번호를 보이지 않게
+    
+        if (!t.used) {
+          btn.addEventListener('click', () => handleTicketClick(i));
+        }
+        container.appendChild(btn);
+      }
+    
+      const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+    
+      // 페이지 텍스트: "1 / 30" → "1"만 표시(원하면 그대로 1 / 30 유지해도 됨)
+      document.getElementById('pageText').textContent = currentPage;
+    
+      // 무한 순환형이므로 disabled는 사용하지 않아도 되지만,
+      // 항상 활성 상태로 두기 위해 disabled 해제
+      document.getElementById('prevBtn').disabled = false;
+      document.getElementById('nextBtn').disabled = false;
+    }
+    
     function gradeText(grade) {
       switch (grade) {
         case 1: return '1등';
@@ -287,45 +349,17 @@
         case 4: return '4등';
         case 5: return '5등';
         case 6: return '6등';
-        case 7: return '또 뽑기';
         default: return '';
       }
     }
-
-    // ---- 티켓 초기화 ----
-    function initTickets() {
-      tickets = [];
-      const gradeList = [];
-
-      Object.keys(gradeCounts).forEach(g => {
-        const count = gradeCounts[g];
-        for (let i = 0; i < count; i++) {
-          gradeList.push(parseInt(g, 10));
-        }
-      });
-
-      if (gradeList.length !== TOTAL_TICKETS) {
-        console.warn('등수 개수 합이 TOTAL_TICKETS와 다릅니다. 실제:', gradeList.length);
-      }
-
-      shuffle(gradeList);
-
-      for (let i = 0; i < TOTAL_TICKETS; i++) {
-        tickets.push({
-          index: i,
-          grade: gradeList[i] || 7,
-          used: false
-        });
-      }
-    }
-
+    
     // ---- 상태 저장 / 불러오기 (localStorage) ----
-    const STORAGE_KEY = 'lucky_draw_800_v1';
-
+    const STORAGE_KEY = 'lotto600_state_v1';
+    
     function saveState() {
       const state = {
         tickets,
-        renderCursor,
+        currentPage,
         resultText: document.getElementById('resultBox').textContent
       };
       try {
@@ -334,46 +368,46 @@
         console.warn('상태 저장 실패:', e);
       }
     }
-
+    
     function loadState() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) return false;
-
+    
       try {
         const state = JSON.parse(saved);
         if (!state.tickets || !Array.isArray(state.tickets)) return false;
-
+    
         tickets = state.tickets;
-        renderCursor = state.renderCursor || 0;
+        currentPage = state.currentPage || 1;
         document.getElementById('resultBox').textContent =
-          state.resultText || '아래의 칸 중 하나를 선택해 보세요.';
+          state.resultText || '복권을 선택해 보세요.';
         return true;
       } catch (e) {
         console.warn('상태 불러오기 실패:', e);
         return false;
       }
     }
-
+    
     // ---- JSON 파일로 내보내기 / 불러오기 ----
     function downloadStateFile() {
       const state = {
         tickets,
-        renderCursor,
+        currentPage,
         resultText: document.getElementById('resultBox').textContent,
         savedAt: new Date().toISOString()
       };
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-
+    
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'lucky_draw_state.json';
+      a.download = 'lotto600_state.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     }
-
+    
     function importStateFromFile(file) {
       const reader = new FileReader();
       reader.onload = e => {
@@ -384,10 +418,10 @@
             return;
           }
           tickets = data.tickets;
-          renderCursor = data.renderCursor || 0;
+          currentPage = data.currentPage || 1;
           document.getElementById('resultBox').textContent =
-            data.resultText || '아래의 칸 중 하나를 선택해 보세요.';
-          rerenderAll();
+            data.resultText || '복권을 선택해 보세요.';
+          renderPage();
           saveState();
           alert('기록을 불러왔습니다.');
         } catch (err) {
@@ -396,190 +430,134 @@
       };
       reader.readAsText(file, 'utf-8');
     }
-
-    // ---- 화면 렌더링 (무한 순환형) ----
-
-    // 컨테이너를 초기화하고, 현재 renderCursor를 기준으로 10개 다시 그림
-    function rerenderAll() {
-      const container = document.getElementById('ticketsContainer');
-      container.innerHTML = '';
-      // 처음에는 10개만 표시
-      for (let i = 0; i < BATCH_SIZE; i++) {
-        appendNextTicket();
-      }
-    }
-
-
-
-
-     
-    // 한 칸씩 생성
-    function appendNextTicket() {
-      const container = document.getElementById('ticketsContainer');
-      const idx = renderCursor % TOTAL_TICKETS;
-      const t = tickets[idx];
     
-      const btn = document.createElement('button');
-      let cls = 'ticket';
-      if (t.used) cls += ' used grade-' + t.grade;   // 뽑은 건 등급 색 + 흐리게
-      btn.className = cls;
-    
-      // 번호는 표시 안 함
-      btn.textContent = '';
-    
-      if (!t.used) {
-        btn.addEventListener('click', () => handleTicketClick(idx));
-      }
-    
-      container.appendChild(btn);
-      renderCursor = (renderCursor + 1) % TOTAL_TICKETS;
-    }
-    
-    // 스크롤 아래 도달 시 10개 추가
-    function setupInfiniteScroll() {
-      const wrapper = document.getElementById('ticketsWrapper');
-      wrapper.addEventListener('scroll', () => {
-        const { scrollTop, clientHeight, scrollHeight } = wrapper;
-        if (scrollTop + clientHeight >= scrollHeight - 2) { // 거의 바닥
-          for (let i = 0; i < BATCH_SIZE; i++) {
-            appendNextTicket();
-          }
-        }
-      });
-    }
-
-
-
-
-     
     // ---- 티켓 선택 흐름 (확인 팝업 포함) ----
     function handleTicketClick(i) {
       const t = tickets[i];
       if (t.used) return;
-
+    
       pendingIndex = i;
       const msg = document.getElementById('confirmMessage');
-      // 실제 번호는 index+1, 하지만 화면에는 안 보임
+      // 번호 제거
+      // msg.textContent = (t.index + 1) + '번 복권을 선택할까요?';
       msg.textContent = '복권을 선택할까요?';
-
+    
       document.getElementById('confirmOverlay').style.display = 'flex';
     }
-
+    
     function cancelSelect() {
       pendingIndex = null;
       document.getElementById('confirmOverlay').style.display = 'none';
     }
-
+    
     function confirmSelect() {
       if (pendingIndex === null) return;
       const i = pendingIndex;
       pendingIndex = null;
       document.getElementById('confirmOverlay').style.display = 'none';
-
+    
       const t = tickets[i];
       if (t.used) return;
-
+    
       t.used = true;
-
+    
       const grade = t.grade;
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
-
-     if (grade === 7) {
-        // 또 뽑기
-        resultBox.textContent = '또 뽑기입니다. 한 번 더 시도해 보세요.';
-      } else {
-        resultBox.textContent = gradeLabel + ' 당첨!';
-      }
-
-
+    
+      // 번호 제거
+      // resultBox.textContent = (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
+      resultBox.textContent = gradeLabel + ' 당첨!';
+    
       showPopup(gradeLabel);
+      renderPage();
       saveState();
     }
-
+    
     // ---- 결과 팝업 ----
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
-
+    
       if (gradeLabel === '1등') {
         title.textContent = '1등!';
-        msg.textContent = '축하합니다!';
       } else if (gradeLabel === '2등') {
         title.textContent = '2등!';
-        msg.textContent = '축하합니다!';
       } else if (gradeLabel === '3등') {
         title.textContent = '3등!';
-        msg.textContent = '축하합니다!';
       } else if (gradeLabel === '4등') {
         title.textContent = '4등';
-        msg.textContent = '아쉬운 차이네요.';
       } else if (gradeLabel === '5등') {
         title.textContent = '5등';
-        msg.textContent = '그래도 수고하셨습니다.';
-      } else if (gradeLabel === '6등') {
-        title.textContent = '6등';
-        msg.textContent = '다음 기회에!';
-      } else if (gradeLabel === '또 뽑기') {
-        title.textContent = '또 뽑기';
-        msg.textContent = '한 번 더 도전해 보세요.';
       } else {
-        title.textContent = '알 수 없음';
-        msg.textContent = '';
+        title.textContent = '6등';
       }
-
+    
+      // 메시지는 필요 시 추가
+      msg.textContent = '';
+    
       overlay.style.display = 'flex';
     }
-
+    
     function closePopup() {
       document.getElementById('popupOverlay').style.display = 'none';
     }
-
-    // ---- 전체 리셋 ----
+    
     function resetGame() {
       initTickets();
-      renderCursor = 0;
-      document.getElementById('resultBox').textContent =
-        '아래의 칸 중 하나를 선택해 보세요.';
-      rerenderAll();
+      currentPage = 1;
+      document.getElementById('resultBox').textContent = '복권을 선택해 보세요.';
+      renderPage();
       saveState();
     }
-
+    
     // ---- 초기 설정 ----
     document.addEventListener('DOMContentLoaded', () => {
+      const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE); // 30
+    
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        // 무한 순환: 1에서 이전 누르면 30으로
+        currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
+        renderPage();
+        saveState();
+      });
+    
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        // 무한 순환: 30에서 다음 누르면 1로
+        currentPage = currentPage < maxPage ? currentPage + 1 : 1;
+        renderPage();
+        saveState();
+      });
+    
       document.getElementById('resetBtn').addEventListener('click', () => {
         localStorage.removeItem(STORAGE_KEY);
         resetGame();
       });
-
+    
       document.getElementById('exportBtn').addEventListener('click', downloadStateFile);
-
+    
       document.getElementById('importBtn').addEventListener('click', () => {
         document.getElementById('importInput').click();
       });
-
+    
       document.getElementById('importInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) importStateFromFile(file);
       });
-
+    
       // 결과 팝업 바깥(어두운 영역) 클릭 시 닫기
       document.getElementById('popupOverlay').addEventListener('click', (e) => {
         if (e.target.id === 'popupOverlay') {
           closePopup();
         }
       });
-
-      // 확인 팝업 바깥은 닫히지 않게 유지 (원하면 같은 방식으로 처리 가능)
-
-      // 초기 데이터 로드
-      initTickets();
+    
       if (!loadState()) {
-        renderCursor = 0;
+        resetGame();
+      } else {
+        renderPage();
       }
-      rerenderAll();
-      setupInfiniteScroll();
     });
   </script>
 </body>
