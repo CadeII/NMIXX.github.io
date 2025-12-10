@@ -482,7 +482,7 @@
       } else if (gradeLabel === '5등') {
         title.textContent = '5등';
       } else {
-        title.textContent = '6';
+        title.textContent = '6등';
       }
 
       overlay.style.display = 'flex';
@@ -533,6 +533,13 @@
       document.getElementById('importInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) importStateFromFile(file);
+      });
+
+      // 결과 팝업 바깥(어두운 영역) 클릭 시 닫기
+      document.getElementById('popupOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'popupOverlay') {
+          closePopup();
+        }
       });
 
       if (!loadState()) {
