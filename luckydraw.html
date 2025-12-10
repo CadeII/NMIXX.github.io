@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>500개 복권 게임</title>
+  <style>
+    :root {
+      --color-primary: #32B8C6;
+      --color-text: #134252;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      color: var(--color-text);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px 24px 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .summary span {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #f0f4f5;
+    }
+
+    .page-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .page-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .tickets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .ticket {
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid #d2d2d2;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      background: #fafafa;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+      user-select: none;
+    }
+    .ticket:hover:not(.used) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .ticket.used {
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    /* 등급별 색 */
+    .grade-1 { background:#FFD54F; border-color:#FFB300; }
+    .grade-2 { background:#CFD8DC; border-color:#90A4AE; }
+    .grade-3 { background:#FFCCBC; border-color:#FF8A65; }
+    .grade-4 { background:#C5E1A5; border-color:#8BC34A; }
+    .grade-5 { background:#B3E5FC; border-color:#4FC3F7; }
+    .grade-6 { background:#E0E0E0; border-color:#BDBDBD; }
+
+    .result-box {
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1px dashed #ccc;
+      font-size: 15px;
+      margin-bottom: 12px;
+      text-align: center;
+      padding: 8px;
+    }
+
+    /* 팝업 */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .popup {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px 28px 24px;
+      max-width: 360px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+    }
+    .popup-title {
+      font-size: 26px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .popup-message {
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .popup button {
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: none;
+      background: var(--color-primary);
+      color:#fff;
+      font-size:14px;
+      cursor:pointer;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 18px 16px 24px; }
+      .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>500개 복권 게임</h1>
+    <p class="desc">한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.</p>
+
+    <div class="summary">
+      <span>1등 4개</span>
+      <span>2등 9개</span>
+      <span>3등 24개</span>
+      <span>4등 36개</span>
+      <span>5등 227개</span>
+      <span>6등 300개</span>
+      <span>총 500개</span>
+    </div>
+
+    <div class="page-info">
+      <div>현재 페이지: <span id="pageText">1 / 5</span></div>
+      <div class="page-buttons">
+        <button class="btn" id="prevBtn">이전 100개</button>
+        <button class="btn" id="nextBtn">다음 100개</button>
+      </div>
+    </div>
+
+    <div class="tickets" id="ticketsContainer"></div>
+
+    <div class="result-box" id="resultBox">복권을 선택해 보세요.</div>
+
+    <button class="btn" id="resetBtn">다시 섞기</button>
+  </div>
+
+  <!-- 팝업 -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup">
+      <div class="popup-title" id="popupTitle"></div>
+      <div class="popup-message" id="popupMessage"></div>
+      <button onclick="closePopup()">확인</button>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_TICKETS = 500;
+    const PAGE_SIZE = 100;
+
+    // 등수별 개수
+    const gradeCounts = {
+      1: 4,
+      2: 9,
+      3: 24,
+      4: 36,
+      5: 227,
+      6: 300
+    };
+
+    let tickets = [];     // { index:0~499, grade:1~6, used:false }
+    let currentPage = 1;  // 1~5
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function initTickets() {
+      tickets = [];
+      const gradeList = [];
+
+      // grade별로 개수만큼 push
+      Object.keys(gradeCounts).forEach(g => {
+        const count = gradeCounts[g];
+        for (let i = 0; i < count; i++) {
+          gradeList.push(parseInt(g, 10));
+        }
+      });
+
+      // 혹시 합이 500이 아닐 경우 대비
+      if (gradeList.length !== TOTAL_TICKETS) {
+        console.warn('등수 개수 합이 500이 아닙니다. 실제:', gradeList.length);
+      }
+
+      shuffle(gradeList);
+
+      for (let i = 0; i < TOTAL_TICKETS; i++) {
+        tickets.push({
+          index: i,
+          grade: gradeList[i],
+          used: false
+        });
+      }
+    }
+
+    function renderPage() {
+      const container = document.getElementById('ticketsContainer');
+      container.innerHTML = '';
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, TOTAL_TICKETS);
+
+      for (let i = start; i < end; i++) {
+        const t = tickets[i];
+        const btn = document.createElement('button');
+        btn.className = 'ticket' + (t.used ? ' used grade-' + t.grade : '');
+        btn.textContent = (t.index + 1); // 1~500 표시
+
+        if (!t.used) {
+          btn.addEventListener('click', () => selectTicket(i));
+        }
+        container.appendChild(btn);
+      }
+
+      document.getElementById('pageText').textContent =
+        currentPage + ' / ' + Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+
+      document.getElementById('prevBtn').disabled = currentPage === 1;
+      document.getElementById('nextBtn').disabled =
+        currentPage === Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+    }
+
+    function gradeText(grade) {
+      switch (grade) {
+        case 1: return '1등';
+        case 2: return '2등';
+        case 3: return '3등';
+        case 4: return '4등';
+        case 5: return '5등';
+        case 6: return '6등';
+        default: return '';
+      }
+    }
+
+    function selectTicket(i) {
+      const t = tickets[i];
+      if (t.used) return;
+
+      t.used = true;
+
+      const grade = t.grade;
+      const gradeLabel = gradeText(grade);
+      const resultBox = document.getElementById('resultBox');
+
+      resultBox.textContent =
+        (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
+
+      showPopup(gradeLabel);
+
+      renderPage(); // 색깔, 사용 상태 갱신
+    }
+
+    function showPopup(gradeLabel) {
+      const overlay = document.getElementById('popupOverlay');
+      const title = document.getElementById('popupTitle');
+      const msg = document.getElementById('popupMessage');
+
+      if (gradeLabel === '1등') {
+        title.textContent = '🎉 축하합니다!';
+        msg.textContent = '1등에 당첨되셨습니다!';
+      } else if (gradeLabel === '2등') {
+        title.textContent = '🥳 축하합니다!';
+        msg.textContent = '2등에 당첨되셨습니다!';
+      } else if (gradeLabel === '3등') {
+        title.textContent = '😄 당첨!';
+        msg.textContent = '3등에 당첨되셨습니다.';
+      } else if (gradeLabel === '4등') {
+        title.textContent = '😊 축하드려요';
+        msg.textContent = '4등에 당첨되셨습니다.';
+      } else if (gradeLabel === '5등') {
+        title.textContent = '괜찮은 결과!';
+        msg.textContent = '5등에 당첨되셨습니다.';
+      } else {
+        title.textContent = '다음 기회에';
+        msg.textContent = '6등입니다. 그래도 수고하셨어요!';
+      }
+
+      overlay.style.display = 'flex';
+    }
+
+    function closePopup() {
+      document.getElementById('popupOverlay').style.display = 'none';
+    }
+
+    function resetGame() {
+      initTickets();
+      currentPage = 1;
+      document.getElementById('resultBox').textContent = '복권을 선택해 보세요.';
+      renderPage();
+    }
+
+    // 페이지 이동 버튼
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPage();
+        }
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+        if (currentPage < maxPage) {
+          currentPage++;
+          renderPage();
+        }
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+      // 초기화
+      resetGame();
+    });
+  </script>
+</body>
+</html>
