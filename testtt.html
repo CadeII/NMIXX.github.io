@@ -262,8 +262,8 @@
   </div>
 
   <script>
-    const TOTAL_TICKETS = 600;
-    const PAGE_SIZE = 20; // 100 → 20으로 변경
+    const TOTAL_TICKETS = 800;
+    const PAGE_SIZE = 50; // 100 → 20으로 변경
     
     // 등수별 개수 (합이 600이 되도록 맞추기)
     const gradeCounts = {
@@ -297,6 +297,10 @@
           gradeList.push(parseInt(g, 10));
         }
       });
+      const EXTRA_RETRY = 200;
+      for (let i = 0; i < EXTRA_RETRY; i++) {
+        gradeList.push(7); // 7번 등급 = 또뽑기
+      }
     
       if (gradeList.length !== TOTAL_TICKETS) {
         console.warn('등수 개수 합이 TOTAL_TICKETS와 다릅니다. 실제:', gradeList.length);
@@ -356,6 +360,7 @@
         case 4: return '4등';
         case 5: return '5등';
         case 6: return '6등';
+        case 7: return '또뽑기';  
         default: return '';
       }
     }
@@ -524,6 +529,7 @@
       const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE); // 30
     
       document.getElementById('prevBtn').addEventListener('click', () => {
+        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
         // 무한 순환: 1에서 이전 누르면 30으로
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
@@ -531,6 +537,7 @@
       });
     
       document.getElementById('nextBtn').addEventListener('click', () => {
+        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
         // 무한 순환: 30에서 다음 누르면 1로
         currentPage = currentPage < maxPage ? currentPage + 1 : 1;
         renderPage();
