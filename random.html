@@ -239,6 +239,83 @@
             color: #FCFCF9;
         }
 
+        /* 팝업 스타일 */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 300ms ease-out;
+        }
+
+        .popup-content {
+            background-color: var(--color-surface);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            animation: slideIn 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .popup-message {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .popup-message.winner {
+            color: var(--color-success);
+        }
+
+        .popup-message.loser {
+            color: var(--color-error);
+        }
+
+        .popup-btn {
+            margin-top: 30px;
+            padding: 12px 30px;
+            background-color: var(--color-primary);
+            color: #FCFCF9;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .popup-btn:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 30px 20px;
@@ -287,6 +364,14 @@
             </div>
 
             <button class="btn reset-btn" id="resetBtn" onclick="resetGame()" style="display: none;">다시 시작</button>
+        </div>
+    </div>
+
+    <!-- 팝업 -->
+    <div class="popup-overlay" id="popupOverlay" style="display: none;">
+        <div class="popup-content">
+            <div class="popup-message" id="popupMessage"></div>
+            <button class="popup-btn" onclick="closePopup()">확인</button>
         </div>
     </div>
 
@@ -345,25 +430,14 @@
                 // 당첨!
                 box.classList.add('revealed', 'winner');
                 box.disabled = true;
-                resultMessage.textContent = '🎉 당첨! 축하합니다!';
-                resultMessage.className = 'result-message winner';
-                resultSection.style.display = 'flex';
-                document.getElementById('resetBtn').style.display = 'block';
                 gameEnded = true;
+                showWinnerPopup();
             } else {
                 // 미당첨
                 box.classList.add('revealed', 'loser');
                 box.disabled = true;
                 feedbackOpen = true;
-                resultMessage.textContent = '😢 미당첨! 계속 도전하세요!';
-                resultMessage.className = 'result-message loser';
-                resultSection.style.display = 'flex';
-                
-                // 계속 버튼 추가
-                resultSection.innerHTML = `
-                    <div class="result-message loser">😢 미당첨! 계속 도전하세요!</div>
-                    <button class="btn continue-btn" onclick="closeFeedback()">계속</button>
-                `;
+                showLoserPopup();
             }
         }
 
@@ -371,6 +445,30 @@
             document.getElementById('resultSection').style.display = 'none';
             document.getElementById('resultSection').innerHTML = `<div class="result-message" id="resultMessage"></div>`;
             feedbackOpen = false;
+        }
+
+        function showWinnerPopup() {
+            const popup = document.getElementById('popupOverlay');
+            const message = document.getElementById('popupMessage');
+            message.textContent = '축하합니다!<br>당첨입니다!';
+            message.className = 'popup-message winner';
+            popup.style.display = 'flex';
+            document.getElementById('resetBtn').style.display = 'block';
+        }
+
+        function showLoserPopup() {
+            const popup = document.getElementById('popupOverlay');
+            const message = document.getElementById('popupMessage');
+            message.textContent = '아쉬워요.<br>다음기회에!';
+            message.className = 'popup-message loser';
+            popup.style.display = 'flex';
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').style.display = 'none';
+            if (!gameEnded) {
+                feedbackOpen = false;
+            }
         }
 
         function resetGame() {
