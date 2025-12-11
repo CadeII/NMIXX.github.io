@@ -204,6 +204,37 @@
       color: #333;
     }
 
+    /* 횟수 입력 팝업 */
+    .draw-popup {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px 24px 24px;
+      max-width: 420px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+    }
+    .draw-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .draw-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .draw-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
     @media (max-width: 600px) {
       .container { padding: 18px 16px 24px; }
       .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
@@ -222,6 +253,7 @@
         <button class="btn" id="prevBtn">이전</button>
         <button class="btn" id="nextBtn">다음</button>
       </div>
+      <button class="btn" id="setDrawBtn">횟수 입력</button>
     </div>
 
     <div class="tickets" id="ticketsContainer"></div>
@@ -242,7 +274,6 @@
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-message" id="popupMessage"></div>
 
-      <!-- 1등용 영상 -->
       <video
         id="rank1Video"
         style="display:none; width:100%; max-height:300px;"
@@ -265,6 +296,18 @@
       <div class="confirm-buttons">
         <button class="confirm-btn confirm-no" onclick="cancelSelect()">아니오</button>
         <button class="confirm-btn confirm-yes" onclick="confirmSelect()">예</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 횟수 입력 팝업 -->
+  <div class="popup-overlay" id="drawOverlay">
+    <div class="draw-popup">
+      <div class="draw-title">뽑기 횟수 입력</div>
+      <input type="number" id="drawInput" class="draw-input" min="1" placeholder="예: 5">
+      <div class="draw-buttons">
+        <button class="btn" id="drawCancelBtn">취소</button>
+        <button class="btn" id="drawOkBtn">확인</button>
       </div>
     </div>
   </div>
@@ -309,7 +352,7 @@
       });
       const EXTRA_RETRY = 200;
       for (let i = 0; i < EXTRA_RETRY; i++) {
-        gradeList.push(7); // 7번 등급 = 또뽑기
+        gradeList.push(7);
       }
 
       if (gradeList.length !== TOTAL_TICKETS) {
@@ -443,9 +486,24 @@
       reader.readAsText(file, 'utf-8');
     }
 
-    function askDrawCount() {
-      const input = prompt('몇 회 뽑기를 할까요?', remainingDraws > 0 ? String(remainingDraws) : '5');
-      const n = parseInt(input, 10);
+    // 횟수 입력 팝업 열기
+    function openDrawPopup() {
+      const overlay = document.getElementById('drawOverlay');
+      const input = document.getElementById('drawInput');
+      input.value = remainingDraws > 0 ? String(remainingDraws) : '';
+      overlay.style.display = 'flex';
+      input.focus();
+    }
+
+    // 횟수 입력 팝업 닫기
+    function closeDrawPopup() {
+      document.getElementById('drawOverlay').style.display = 'none';
+    }
+
+    // 입력된 횟수 적용
+    function applyDrawCount() {
+      const input = document.getElementById('drawInput');
+      const n = parseInt(input.value, 10);
       if (!isNaN(n) && n > 0) {
         remainingDraws = n;
       } else {
@@ -458,6 +516,8 @@
       } else {
         resultBox.textContent = '남은 뽑기 횟수가 없습니다.';
       }
+
+      closeDrawPopup();
       saveState();
     }
 
@@ -465,10 +525,11 @@
       const t = tickets[i];
       if (t.used) return;
 
-      // 남은 횟수 0이면 선택 불가, 입력창 다시
+      // 남은 횟수 0이면 선택 불가, 자동 팝업 X
       if (remainingDraws <= 0) {
-        askDrawCount();
-        if (remainingDraws <= 0) return;
+        const resultBox = document.getElementById('resultBox');
+        resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+        return;
       }
 
       pendingIndex = i;
@@ -498,7 +559,6 @@
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
 
-      // 또뽑기가 아닐 때만 횟수 차감
       if (grade !== 7) {
         if (remainingDraws > 0) {
           remainingDraws -= 1;
@@ -510,8 +570,6 @@
       } else {
         resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
       }
-
-      // 남은 횟수가 0이 되면 다음부터 클릭 시 다시 입력 받게 됨
 
       if (grade === 1 || grade === 2 || grade === 3) {
         setTimeout(() => {
@@ -581,7 +639,6 @@
       remainingDraws = 0;
       renderPage();
       saveState();
-      askDrawCount();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -623,6 +680,22 @@
         }
       });
 
+      // 횟수 입력 버튼
+      document.getElementById('setDrawBtn').addEventListener('click', () => {
+        openDrawPopup();
+      });
+      document.getElementById('drawCancelBtn').addEventListener('click', () => {
+        closeDrawPopup();
+      });
+      document.getElementById('drawOkBtn').addEventListener('click', () => {
+        applyDrawCount();
+      });
+      document.getElementById('drawOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'drawOverlay') {
+          closeDrawPopup();
+        }
+      });
+
       // 스와이프 페이지 전환
       let touchStartX = null;
       let touchStartY = null;
@@ -658,8 +731,11 @@
       document.addEventListener('keydown', (e) => {
         const confirmOverlay = document.getElementById('confirmOverlay');
         const popupOverlay = document.getElementById('popupOverlay');
+        const drawOverlay = document.getElementById('drawOverlay');
+
         const isConfirmOpen = confirmOverlay.style.display === 'flex';
         const isResultOpen = popupOverlay.style.display === 'flex';
+        const isDrawOpen = drawOverlay.style.display === 'flex';
 
         if (isConfirmOpen) {
           if (e.key === 'y' || e.key === 'Y') {
@@ -675,19 +751,24 @@
           e.preventDefault();
           closePopup();
         }
+
+        if (isDrawOpen && e.key === 'Enter') {
+          e.preventDefault();
+          applyDrawCount();
+        }
       });
 
       if (!loadState()) {
         resetGame();
       } else {
         renderPage();
-        // 저장된 remainingDraws가 0이면 바로 새 횟수 입력
-        if (remainingDraws <= 0) {
-          askDrawCount();
-        } else {
-          const resultBox = document.getElementById('resultBox');
+        const resultBox = document.getElementById('resultBox');
+        if (remainingDraws > 0) {
           resultBox.textContent =
             '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+        } else {
+          resultBox.textContent =
+            '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
         }
       }
     });
