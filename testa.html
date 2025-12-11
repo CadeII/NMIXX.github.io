@@ -278,7 +278,6 @@
         id="rank1Video"
         style="display:none; width:100%; max-height:300px;"
         preload="auto"
-        muted
         playsinline
       >
         <source src="jiwoo.mp4" type="video/mp4">
@@ -288,7 +287,6 @@
         id="rank6Video"
         style="display:none; width:100%; max-height:300px;"
         preload="auto"
-        muted
         playsinline
       >
         <source src="EEE.mp4" type="video/mp4">
@@ -559,36 +557,47 @@
       const i = pendingIndex;
       pendingIndex = null;
       document.getElementById('confirmOverlay').style.display = 'none';
-
+    
       const t = tickets[i];
       if (t.used) return;
-
+    
       t.used = true;
-
+    
       const grade = t.grade;
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
-
-      if (grade !== 7) {
-        if (remainingDraws > 0) {
-          remainingDraws -= 1;
-        }
-      }
-
+    
+      // 남은 횟수 처리(또뽑기 제외)는 기존 로직 그대로...
+    
+      // 결과 텍스트
       if (remainingDraws > 0) {
         resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)';
       } else {
         resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
       }
-
-      if (grade === 1 || grade === 2 || grade === 3) {
-        setTimeout(() => {
-          showPopup(gradeLabel);
-        }, 1000);
-      } else {
-        showPopup(gradeLabel);
+    
+      // ★ 예(확정) 시점: 1등/6등이면 소리 켜서 재생
+      const video1 = document.getElementById('rank1Video');
+      const video6 = document.getElementById('rank6Video');
+      [video1, video6].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.muted = false;   // 소리 켜기
+        v.style.display = 'none';
+      });
+    
+      if (grade === 1 && video1) {
+        video1.style.display = 'block';
+        video1.play().catch(() => {});
+      } else if (grade === 6 && video6) {
+        video6.style.display = 'block';
+        video6.play().catch(() => {});
       }
-
+    
+      // 1, 2, 3등만 1초 뒤 팝업
+      showPopup(gradeLabel);
+    
       renderPage();
       saveState();
     }
@@ -620,7 +629,7 @@
     
       msg.textContent = '';
     
-      // 먼저 두 영상 모두 정지/숨김
+      // 두 영상 정지/숨김
       [video1, video6].forEach(v => {
         if (!v) return;
         if (!v.paused) v.pause();
@@ -628,15 +637,11 @@
         v.style.display = 'none';
       });
     
-      // 1등 또는 6등일 때 해당 영상 표시 + 재생
+      // 해당 등급이면 화면에만 보여주고, 재생은 confirmSelect에서
       if (gradeLabel === '1등' && video1) {
         video1.style.display = 'block';
-        video1.currentTime = 0;
-        video1.play().catch(() => {});
       } else if (gradeLabel === '6등' && video6) {
         video6.style.display = 'block';
-        video6.currentTime = 0;
-        video6.play().catch(() => {});
       }
     
       overlay.style.display = 'flex';
@@ -656,6 +661,7 @@
     
       document.getElementById('popupOverlay').style.display = 'none';
     }
+
 
     function resetGame() {
       initTickets();
