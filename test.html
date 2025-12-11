@@ -276,9 +276,8 @@
 
   <script>
     const TOTAL_TICKETS = 800;
-    const PAGE_SIZE = 50; // 100 → 20으로 변경
+    const PAGE_SIZE = 50;
     
-    // 등수별 개수 (합이 600이 되도록 맞추기)
     const gradeCounts = {
       1: 4,
       2: 9,
@@ -288,9 +287,9 @@
       6: 300
     };
     
-    let tickets = []; // { index:0~599, grade:1~6, used:false }
-    let currentPage = 1; // 1~30
-    let pendingIndex = null; // 확인 대기 중인 티켓 인덱스
+    let tickets = [];
+    let currentPage = 1;
+    let pendingIndex = null;
     
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -343,10 +342,7 @@
         let cls = 'ticket';
         if (t.used) cls += ' used grade-' + t.grade;
         btn.className = cls;
-    
-        // 1~600 번호 표시 제거
-        // btn.textContent = (t.index + 1);
-        btn.textContent = ''; // 번호를 보이지 않게
+        btn.textContent = ''; // 번호 숨김
     
         if (!t.used) {
           btn.addEventListener('click', () => handleTicketClick(i));
@@ -355,10 +351,6 @@
       }
     
       const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
-    
-    
-      // 무한 순환형이므로 disabled는 사용하지 않아도 되지만,
-      // 항상 활성 상태로 두기 위해 disabled 해제
       document.getElementById('prevBtn').disabled = false;
       document.getElementById('nextBtn').disabled = false;
     }
@@ -376,7 +368,6 @@
       }
     }
     
-    // ---- 상태 저장 / 불러오기 (localStorage) ----
     const STORAGE_KEY = 'lotto600_state_v1';
     
     function saveState() {
@@ -411,7 +402,6 @@
       }
     }
     
-    // ---- JSON 파일로 내보내기 / 불러오기 ----
     function downloadStateFile() {
       const state = {
         tickets,
@@ -454,15 +444,12 @@
       reader.readAsText(file, 'utf-8');
     }
     
-    // ---- 티켓 선택 흐름 (확인 팝업 포함) ----
     function handleTicketClick(i) {
       const t = tickets[i];
       if (t.used) return;
     
       pendingIndex = i;
       const msg = document.getElementById('confirmMessage');
-      // 번호 제거
-      // msg.textContent = (t.index + 1) + '번 복권을 선택할까요?';
       msg.textContent = '복권을 선택할까요?';
     
       document.getElementById('confirmOverlay').style.display = 'flex';
@@ -488,54 +475,52 @@
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
     
-      // 번호 제거
-      // resultBox.textContent = (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
       resultBox.textContent = gradeLabel + ' 당첨!';
+    
       // 1, 2, 3등만 1초 뒤에 팝업
-    if (grade === 1 || grade === 2 || grade === 3) {
-      setTimeout(() => {
+      if (grade === 1 || grade === 2 || grade === 3) {
+        setTimeout(() => {
+          showPopup(gradeLabel);
+        }, 1000);
+      } else {
         showPopup(gradeLabel);
-      }, 1000);
-    } else {
-      showPopup(gradeLabel);
-    }
+      }
+    
       renderPage();
       saveState();
+    }
     
-    // ---- 결과 팝업 ----
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
       const video = document.getElementById('rank1Video');
     
-        if (gradeLabel === '1등') {
-          title.textContent = '1등!';
-        } else if (gradeLabel === '2등') {
-          title.textContent = '2등!';
-        } else if (gradeLabel === '3등') {
-          title.textContent = '3등!';
-        } else if (gradeLabel === '4등') {
-          title.textContent = '4등';
-        } else if (gradeLabel === '5등') {
-          title.textContent = '5등';
-        } else if (gradeLabel === '6등') {
-          title.textContent = '6등';
-        } else if (gradeLabel === '또뽑기') {
-          title.textContent = '또뽑기';
-        } else {
-          title.textContent = '';
-        }
-        
-      // 메시지는 필요 시 추가
+      if (gradeLabel === '1등') {
+        title.textContent = '1등!';
+      } else if (gradeLabel === '2등') {
+        title.textContent = '2등!';
+      } else if (gradeLabel === '3등') {
+        title.textContent = '3등!';
+      } else if (gradeLabel === '4등') {
+        title.textContent = '4등';
+      } else if (gradeLabel === '5등') {
+        title.textContent = '5등';
+      } else if (gradeLabel === '6등') {
+        title.textContent = '6등';
+      } else if (gradeLabel === '또뽑기') {
+        title.textContent = '또뽑기';
+      } else {
+        title.textContent = '';
+      }
+    
       msg.textContent = '';
-       // 1등이면 영상 표시 + 재생, 아니면 숨기고 정지
+    
+      // 1등이면 영상 표시 + 재생, 아니면 숨기고 정지
       if (gradeLabel === '1등') {
         video.style.display = 'block';
         video.currentTime = 0;
-        video.play().catch(() => {
-          // 자동재생이 막힌 경우를 대비한 예외 무시
-        });
+        video.play().catch(() => {});
       } else {
         if (!video.paused) video.pause();
         video.currentTime = 0;
@@ -546,6 +531,12 @@
     }
     
     function closePopup() {
+      const video = document.getElementById('rank1Video');
+      if (video && !video.paused) {
+        video.pause();
+        video.currentTime = 0;
+        video.style.display = 'none';
+      }
       document.getElementById('popupOverlay').style.display = 'none';
     }
     
@@ -557,13 +548,11 @@
       saveState();
     }
     
-    // ---- 초기 설정 ----
     document.addEventListener('DOMContentLoaded', () => {
-      const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE); // 30
+      const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
     
       document.getElementById('prevBtn').addEventListener('click', () => {
         const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
-        // 무한 순환: 1에서 이전 누르면 30으로
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
         saveState();
@@ -571,7 +560,6 @@
     
       document.getElementById('nextBtn').addEventListener('click', () => {
         const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
-        // 무한 순환: 30에서 다음 누르면 1로
         currentPage = currentPage < maxPage ? currentPage + 1 : 1;
         renderPage();
         saveState();
@@ -593,7 +581,6 @@
         if (file) importStateFromFile(file);
       });
     
-      // 결과 팝업 바깥(어두운 영역) 클릭 시 닫기
       document.getElementById('popupOverlay').addEventListener('click', (e) => {
         if (e.target.id === 'popupOverlay') {
           closePopup();
@@ -607,5 +594,6 @@
       }
     });
   </script>
+
 </body>
 </html>
