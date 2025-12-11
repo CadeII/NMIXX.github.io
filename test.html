@@ -586,7 +586,30 @@
           closePopup();
         }
       });
+      // ★ 키보드 단축키: Y/N/Enter
+      document.addEventListener('keydown', (e) => {
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const isConfirmOpen = confirmOverlay.style.display === 'flex';
+        const isResultOpen = popupOverlay.style.display === 'flex';
     
+        // 선택 확인 팝업 열려 있을 때: Y / N
+        if (isConfirmOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            confirmSelect();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            cancelSelect();
+          }
+        }
+    
+        // 결과 팝업 열려 있을 때: Enter
+        if (isResultOpen && e.key === 'Enter') {
+          e.preventDefault();
+          closePopup();
+        }
+      });
       if (!loadState()) {
         resetGame();
       } else {
