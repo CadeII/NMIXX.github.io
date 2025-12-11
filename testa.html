@@ -758,12 +758,12 @@
           }
         }
 
-        if (isResultOpen && e.key === 'Enter') {
+        if (isResultOpen && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
           closePopup();
         }
 
-        if (isDrawOpen && e.key === 'Enter') {
+        if (isDrawOpen && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
           applyDrawCount();
         }
