@@ -273,7 +273,7 @@
     <div class="popup">
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-message" id="popupMessage"></div>
-
+      <!-- 1등용 영상 -->
       <video
         id="rank1Video"
         style="display:none; width:100%; max-height:300px;"
@@ -282,6 +282,16 @@
         playsinline
       >
         <source src="jiwoo.mp4" type="video/mp4">
+      </video>
+      <!-- 6등용 영상 -->
+      <video
+        id="rank6Video"
+        style="display:none; width:100%; max-height:300px;"
+        preload="auto"
+        muted
+        playsinline
+      >
+        <source src="EEE.mp4" type="video/mp4">
       </video>
       
       <button onclick="closePopup()">확인</button>
@@ -587,8 +597,9 @@
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
-      const video = document.getElementById('rank1Video');
-
+      const video1 = document.getElementById('rank1Video');
+      const video6 = document.getElementById('rank6Video');
+    
       if (gradeLabel === '1등') {
         title.textContent = '1등!';
       } else if (gradeLabel === '2등') {
@@ -606,29 +617,43 @@
       } else {
         title.textContent = '';
       }
-
+    
       msg.textContent = '';
-
-      if (gradeLabel === '1등') {
-        video.style.display = 'block';
-        video.currentTime = 0;
-        video.play().catch(() => {});
-      } else {
-        if (!video.paused) video.pause();
-        video.currentTime = 0;
-        video.style.display = 'none';
+    
+      // 먼저 두 영상 모두 정지/숨김
+      [video1, video6].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.style.display = 'none';
+      });
+    
+      // 1등 또는 6등일 때 해당 영상 표시 + 재생
+      if (gradeLabel === '1등' && video1) {
+        video1.style.display = 'block';
+        video1.currentTime = 0;
+        video1.play().catch(() => {});
+      } else if (gradeLabel === '6등' && video6) {
+        video6.style.display = 'block';
+        video6.currentTime = 0;
+        video6.play().catch(() => {});
       }
-
+    
       overlay.style.display = 'flex';
     }
 
+
     function closePopup() {
-      const video = document.getElementById('rank1Video');
-      if (video && !video.paused) {
-        video.pause();
-        video.currentTime = 0;
-        video.style.display = 'none';
-      }
+      const video1 = document.getElementById('rank1Video');
+      const video6 = document.getElementById('rank6Video');
+    
+      [video1, video6].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.style.display = 'none';
+      });
+    
       document.getElementById('popupOverlay').style.display = 'none';
     }
 
