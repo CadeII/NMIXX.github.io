@@ -273,6 +273,7 @@
     <div class="popup">
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-message" id="popupMessage"></div>
+
       <!-- 1등용 영상 -->
       <video
         id="rank1Video"
@@ -361,10 +362,6 @@
       const EXTRA_RETRY = 200;
       for (let i = 0; i < EXTRA_RETRY; i++) {
         gradeList.push(7);
-      }
-
-      if (gradeList.length !== TOTAL_TICKETS) {
-        console.warn('등수 개수 합이 TOTAL_TICKETS와 다릅니다. 실제:', gradeList.length);
       }
 
       shuffle(gradeList);
@@ -503,12 +500,10 @@
       input.focus();
     }
 
-    // 횟수 입력 팝업 닫기
     function closeDrawPopup() {
       document.getElementById('drawOverlay').style.display = 'none';
     }
 
-    // 입력된 횟수 적용
     function applyDrawCount() {
       const input = document.getElementById('drawInput');
       const n = parseInt(input.value, 10);
@@ -533,7 +528,6 @@
       const t = tickets[i];
       if (t.used) return;
 
-      // 남은 횟수 0이면 선택 불가, 자동 팝업 X
       if (remainingDraws <= 0) {
         const resultBox = document.getElementById('resultBox');
         resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
@@ -557,36 +551,40 @@
       const i = pendingIndex;
       pendingIndex = null;
       document.getElementById('confirmOverlay').style.display = 'none';
-    
+
       const t = tickets[i];
       if (t.used) return;
-    
+
       t.used = true;
-    
+
       const grade = t.grade;
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
-    
-      // 남은 횟수 처리(또뽑기 제외)는 기존 로직 그대로...
-    
-      // 결과 텍스트
+
+      // 또뽑기(7등)가 아닐 때만 횟수 차감
+      if (grade !== 7) {
+        if (remainingDraws > 0) {
+          remainingDraws -= 1;
+        }
+      }
+
       if (remainingDraws > 0) {
         resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)';
       } else {
         resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
       }
-    
-      // ★ 예(확정) 시점: 1등/6등이면 소리 켜서 재생
+
+      // 1등/6등일 때 영상 소리 나게 재생
       const video1 = document.getElementById('rank1Video');
       const video6 = document.getElementById('rank6Video');
       [video1, video6].forEach(v => {
         if (!v) return;
         if (!v.paused) v.pause();
         v.currentTime = 0;
-        v.muted = false;   // 소리 켜기
+        v.muted = false;
         v.style.display = 'none';
       });
-    
+
       if (grade === 1 && video1) {
         video1.style.display = 'block';
         video1.play().catch(() => {});
@@ -594,10 +592,10 @@
         video6.style.display = 'block';
         video6.play().catch(() => {});
       }
-    
-      // 1, 2, 3등만 1초 뒤 팝업
+
+      // 바로 결과 팝업
       showPopup(gradeLabel);
-    
+
       renderPage();
       saveState();
     }
@@ -606,9 +604,7 @@
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
-      const video1 = document.getElementById('rank1Video');
-      const video6 = document.getElementById('rank6Video');
-    
+
       if (gradeLabel === '1등') {
         title.textContent = '1등!';
       } else if (gradeLabel === '2등') {
@@ -626,42 +622,26 @@
       } else {
         title.textContent = '';
       }
-    
+
       msg.textContent = '';
-    
-      // 두 영상 정지/숨김
-      [video1, video6].forEach(v => {
-        if (!v) return;
-        if (!v.paused) v.pause();
-        v.currentTime = 0;
-        v.style.display = 'none';
-      });
-    
-      // 해당 등급이면 화면에만 보여주고, 재생은 confirmSelect에서
-      if (gradeLabel === '1등' && video1) {
-        video1.style.display = 'block';
-      } else if (gradeLabel === '6등' && video6) {
-        video6.style.display = 'block';
-      }
-    
+
+      // 비디오는 confirmSelect에서 이미 재생/표시 상태 유지
       overlay.style.display = 'flex';
     }
-
 
     function closePopup() {
       const video1 = document.getElementById('rank1Video');
       const video6 = document.getElementById('rank6Video');
-    
+
       [video1, video6].forEach(v => {
         if (!v) return;
         if (!v.paused) v.pause();
         v.currentTime = 0;
         v.style.display = 'none';
       });
-    
+
       document.getElementById('popupOverlay').style.display = 'none';
     }
-
 
     function resetGame() {
       initTickets();
