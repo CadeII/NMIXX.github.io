@@ -586,6 +586,41 @@
           closePopup();
         }
       });
+       // ★ 여기부터 스와이프 추가
+      let touchStartX = null;
+      let touchStartY = null;
+      const SWIPE_THRESHOLD = 50; // 최소 이동 거리(px)
+    
+      const swipeTarget = document.getElementById('ticketsContainer'); // 스와이프 영역
+    
+      swipeTarget.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+      });
+    
+      swipeTarget.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+    
+        const t = e.changedTouches[0];
+        const deltaX = t.clientX - touchStartX;
+        const deltaY = t.clientY - touchStartY;
+    
+        // 가로 스와이프가 세로보다 크고, 일정 거리 이상일 때만 처리
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+          if (deltaX < 0) {
+            // 왼쪽으로 스와이프 → 다음 페이지
+            document.getElementById('nextBtn').click();
+          } else {
+            // 오른쪽으로 스와이프 → 이전 페이지
+            document.getElementById('prevBtn').click();
+          }
+        }
+    
+        touchStartX = null;
+        touchStartY = null;
+      });
+
       // ★ 키보드 단축키: Y/N/Enter
       document.addEventListener('keydown', (e) => {
         const confirmOverlay = document.getElementById('confirmOverlay');
