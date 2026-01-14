@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Lucky Draw</title>
+  <style>
+    :root {
+      --color-primary: #32B8C6;
+      --color-text: #134252;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      color: var(--color-text);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px 24px 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    .page-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .page-buttons {
+      display: flex;
+      gap: 8px;
+      touch-action: manipulation;
+    }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .tickets {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .ticket {
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid #d2d2d2;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      background: #fafafa;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+      user-select: none;
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ticket:hover:not(.used) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .ticket.used {
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    /* 등급별 색 */
+    .grade-1 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-2 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-3 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-4 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-5 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-6 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-7 { background:#B6D7A8; border-color:#B6D7A8; }
+
+    .result-box {
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1px dashed #ccc;
+      font-size: 15px;
+      margin-bottom: 12px;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .tool-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .popup {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px 28px 24px;
+      max-width: 560px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+    }
+    .popup-title {
+      font-size: 60px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    .popup-message {
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+    .popup button {
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: none;
+      background: var(--color-primary);
+      color:#fff;
+      font-size:14px;
+      cursor:pointer;
+    }
+
+    .confirm-popup {
+      background: #fff;
+      border-radius: 14px;
+      padding: 40px 24px 30px;
+      max-width: 620px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+    }
+    .confirm-title {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .confirm-message {
+      font-size: 25px;
+      margin-bottom: 18px;
+    }
+    .confirm-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .confirm-btn {
+      padding: 20px 40px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .confirm-yes {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .confirm-no {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    /* 횟수 입력 팝업 */
+    .draw-popup {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px 24px 24px;
+      max-width: 420px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+    }
+    .draw-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .draw-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .draw-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 18px 16px 24px; }
+      .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Lucky Draw</h1>
+    <p class="desc">
+      한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.
+    </p>
+
+    <div class="page-info">
+      <div class="page-buttons">
+        <button class="btn" id="prevBtn">이전</button>
+        <button class="btn" id="nextBtn">다음</button>
+      </div>
+      <button class="btn" id="setDrawBtn">횟수 입력</button>
+    </div>
+
+    <div class="tickets" id="ticketsContainer"></div>
+
+    <div class="result-box" id="resultBox">복권을 선택해 보세요.</div>
+
+    <div class="tool-buttons">
+      <button class="btn" id="resetBtn">전체 다시 섞기</button>
+      <button class="btn" id="exportBtn">기록 파일로 저장</button>
+      <button class="btn" id="importBtn">기록 파일 불러오기</button>
+      <input type="file" id="importInput" style="display:none" accept="application/json">
+    </div>
+  </div>
+
+  <!-- 결과 팝업 -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup">
+      <div class="popup-title" id="popupTitle"></div>
+      <div class="popup-message" id="popupMessage"></div>
+
+      <!-- 1등용 영상 -->
+      <video
+        id="rank1Video"
+        style="display:none; width:100%; max-height:300px;"
+        preload="auto"
+        playsinline
+      >
+        <source src="jiwoo.mp4" type="video/mp4">
+      </video>
+      <!-- 6등용 영상 -->
+      <video
+        id="rank6Video"
+        style="display:none; width:100%; max-height:300px;"
+        preload="auto"
+        playsinline
+      >
+        <source src="EEE.mp4" type="video/mp4">
+      </video>
+      
+      <button onclick="closePopup()">확인</button>
+    </div>
+  </div>
+
+  <!-- 선택 확인 팝업 -->
+  <div class="popup-overlay" id="confirmOverlay">
+    <div class="confirm-popup">
+      <div class="confirm-title">번호 선택</div>
+      <div class="confirm-message" id="confirmMessage"></div>
+      <div class="confirm-buttons">
+        <button class="confirm-btn confirm-no" onclick="cancelSelect()">아니오</button>
+        <button class="confirm-btn confirm-yes" onclick="confirmSelect()">예</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 횟수 입력 팝업 -->
+  <div class="popup-overlay" id="drawOverlay">
+    <div class="draw-popup">
+      <div class="draw-title">뽑기 횟수 입력</div>
+      <input type="number" id="drawInput" class="draw-input" min="1" placeholder="예: 5">
+      <div class="draw-buttons">
+        <button class="btn" id="drawCancelBtn">취소</button>
+        <button class="btn" id="drawOkBtn">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_TICKETS = 600;
+    const PAGE_SIZE = 50;
+
+    const gradeCounts = {
+      1: 3,
+      2: 6,
+      3: 16,
+      4: 25,
+      5: 150,
+      6: 220
+    };
+
+    let tickets = [];
+    let currentPage = 1;
+    let pendingIndex = null;
+    let remainingDraws = 0;
+
+    const STORAGE_KEY = 'lotto600_state_v1';
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function initTickets() {
+      tickets = [];
+      const gradeList = [];
+
+      Object.keys(gradeCounts).forEach(g => {
+        const count = gradeCounts[g];
+        for (let i = 0; i < count; i++) {
+          gradeList.push(parseInt(g, 10));
+        }
+      });
+      const EXTRA_RETRY = 180;
+      for (let i = 0; i < EXTRA_RETRY; i++) {
+        gradeList.push(7);
+      }
+
+      shuffle(gradeList);
+
+      for (let i = 0; i < TOTAL_TICKETS; i++) {
+        tickets.push({
+          index: i,
+          grade: gradeList[i] || 6,
+          used: false
+        });
+      }
+    }
+
+    function renderPage() {
+      const container = document.getElementById('ticketsContainer');
+      container.innerHTML = '';
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, TOTAL_TICKETS);
+
+      for (let i = start; i < end; i++) {
+        const t = tickets[i];
+        const btn = document.createElement('button');
+        let cls = 'ticket';
+        if (t.used) cls += ' used grade-' + t.grade;
+        btn.className = cls;
+        btn.textContent = '';
+
+        if (!t.used) {
+          btn.addEventListener('click', () => handleTicketClick(i));
+        }
+        container.appendChild(btn);
+      }
+
+      document.getElementById('prevBtn').disabled = false;
+      document.getElementById('nextBtn').disabled = false;
+    }
+
+    function gradeText(grade) {
+      switch (grade) {
+        case 1: return '1등';
+        case 2: return '2등';
+        case 3: return '3등';
+        case 4: return '4등';
+        case 5: return '5등';
+        case 6: return '6등';
+        case 7: return '또뽑기';
+        default: return '';
+      }
+    }
+
+    function saveState() {
+      const state = {
+        tickets,
+        currentPage,
+        resultText: document.getElementById('resultBox').textContent,
+        remainingDraws
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('상태 저장 실패:', e);
+      }
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+
+      try {
+        const state = JSON.parse(saved);
+        if (!state.tickets || !Array.isArray(state.tickets)) return false;
+
+        tickets = state.tickets;
+        currentPage = state.currentPage || 1;
+        remainingDraws = typeof state.remainingDraws === 'number' ? state.remainingDraws : 0;
+        document.getElementById('resultBox').textContent =
+          state.resultText || '복권을 선택해 보세요.';
+        return true;
+      } catch (e) {
+        console.warn('상태 불러오기 실패:', e);
+        return false;
+      }
+    }
+
+    function downloadStateFile() {
+      const state = {
+        tickets,
+        currentPage,
+        resultText: document.getElementById('resultBox').textContent,
+        remainingDraws,
+        savedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lotto600_state.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function importStateFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.tickets || !Array.isArray(data.tickets)) {
+            alert('잘못된 기록 파일입니다.');
+            return;
+          }
+          tickets = data.tickets;
+          currentPage = data.currentPage || 1;
+          remainingDraws = typeof data.remainingDraws === 'number' ? data.remainingDraws : 0;
+          document.getElementById('resultBox').textContent =
+            data.resultText || '복권을 선택해 보세요.';
+          renderPage();
+          saveState();
+          alert('기록을 불러왔습니다.');
+        } catch (err) {
+          alert('기록 파일을 읽는 중 오류가 발생했습니다.');
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    // 횟수 입력 팝업 열기
+    function openDrawPopup() {
+      const overlay = document.getElementById('drawOverlay');
+      const input = document.getElementById('drawInput');
+      input.value = remainingDraws > 0 ? String(remainingDraws) : '';
+      overlay.style.display = 'flex';
+      input.focus();
+    }
+
+    function closeDrawPopup() {
+      document.getElementById('drawOverlay').style.display = 'none';
+    }
+
+    function applyDrawCount() {
+      const input = document.getElementById('drawInput');
+      const n = parseInt(input.value, 10);
+      if (!isNaN(n) && n > 0) {
+        remainingDraws = n;
+      } else {
+        remainingDraws = 0;
+      }
+
+      const resultBox = document.getElementById('resultBox');
+      if (remainingDraws > 0) {
+        resultBox.textContent = '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+      } else {
+        resultBox.textContent = '남은 뽑기 횟수가 없습니다.';
+      }
+
+      closeDrawPopup();
+      saveState();
+    }
+
+    function handleTicketClick(i) {
+      const t = tickets[i];
+      if (t.used) return;
+
+      if (remainingDraws <= 0) {
+        const resultBox = document.getElementById('resultBox');
+        resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+        return;
+      }
+
+      pendingIndex = i;
+      const msg = document.getElementById('confirmMessage');
+      msg.textContent = '복권을 선택할까요?';
+
+      document.getElementById('confirmOverlay').style.display = 'flex';
+    }
+
+    function cancelSelect() {
+      pendingIndex = null;
+      document.getElementById('confirmOverlay').style.display = 'none';
+    }
+
+    function confirmSelect() {
+      if (pendingIndex === null) return;
+      const i = pendingIndex;
+      pendingIndex = null;
+      document.getElementById('confirmOverlay').style.display = 'none';
+
+      const t = tickets[i];
+      if (t.used) return;
+
+      t.used = true;
+
+      const grade = t.grade;
+      const gradeLabel = gradeText(grade);
+      const resultBox = document.getElementById('resultBox');
+
+      // 또뽑기(7등)가 아닐 때만 횟수 차감
+      if (grade !== 7) {
+        if (remainingDraws > 0) {
+          remainingDraws -= 1;
+        }
+      }
+
+      if (remainingDraws > 0) {
+        resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)';
+      } else {
+        resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
+      }
+
+      // 1등/6등일 때 영상 소리 나게 재생
+      const video1 = document.getElementById('rank1Video');
+      const video6 = document.getElementById('rank6Video');
+      [video1, video6].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.muted = false;
+        v.style.display = 'none';
+      });
+
+      if (grade === 1 && video1) {
+        video1.style.display = 'block';
+        video1.play().catch(() => {});
+      } else if (grade === 6 && video6) {
+        video6.style.display = 'block';
+        video6.play().catch(() => {});
+      }
+
+      // 바로 결과 팝업
+      showPopup(gradeLabel);
+
+      renderPage();
+      saveState();
+    }
+
+    function showPopup(gradeLabel) {
+      const overlay = document.getElementById('popupOverlay');
+      const title = document.getElementById('popupTitle');
+      const msg = document.getElementById('popupMessage');
+
+      if (gradeLabel === '1등') {
+        title.textContent = '1등!';
+      } else if (gradeLabel === '2등') {
+        title.textContent = '2등!';
+      } else if (gradeLabel === '3등') {
+        title.textContent = '3등!';
+      } else if (gradeLabel === '4등') {
+        title.textContent = '4등';
+      } else if (gradeLabel === '5등') {
+        title.textContent = '5등';
+      } else if (gradeLabel === '6등') {
+        title.textContent = '6등';
+      } else if (gradeLabel === '또뽑기') {
+        title.textContent = '또뽑기';
+      } else {
+        title.textContent = '';
+      }
+
+      msg.textContent = '';
+
+      // 비디오는 confirmSelect에서 이미 재생/표시 상태 유지
+      overlay.style.display = 'flex';
+    }
+
+    function closePopup() {
+      const video1 = document.getElementById('rank1Video');
+      const video6 = document.getElementById('rank6Video');
+
+      [video1, video6].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.style.display = 'none';
+      });
+
+      document.getElementById('popupOverlay').style.display = 'none';
+    }
+
+    function resetGame() {
+      initTickets();
+      currentPage = 1;
+      document.getElementById('resultBox').textContent = '복권을 선택해 보세요.';
+      remainingDraws = 0;
+      renderPage();
+      saveState();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+        currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
+        renderPage();
+        saveState();
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+        currentPage = currentPage < maxPage ? currentPage + 1 : 1;
+        renderPage();
+        saveState();
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        localStorage.removeItem(STORAGE_KEY);
+        resetGame();
+      });
+
+      document.getElementById('exportBtn').addEventListener('click', downloadStateFile);
+
+      document.getElementById('importBtn').addEventListener('click', () => {
+        document.getElementById('importInput').click();
+      });
+
+      document.getElementById('importInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) importStateFromFile(file);
+      });
+
+      document.getElementById('popupOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'popupOverlay') {
+          closePopup();
+        }
+      });
+
+      // 횟수 입력 버튼
+      document.getElementById('setDrawBtn').addEventListener('click', () => {
+        openDrawPopup();
+      });
+      document.getElementById('drawCancelBtn').addEventListener('click', () => {
+        closeDrawPopup();
+      });
+      document.getElementById('drawOkBtn').addEventListener('click', () => {
+        applyDrawCount();
+      });
+      document.getElementById('drawOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'drawOverlay') {
+          closeDrawPopup();
+        }
+      });
+
+      // 스와이프 페이지 전환
+      let touchStartX = null;
+      let touchStartY = null;
+      const SWIPE_THRESHOLD = 50;
+      const swipeTarget = document.getElementById('ticketsContainer');
+
+      swipeTarget.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+      });
+
+      swipeTarget.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+
+        const t = e.changedTouches[0];
+        const deltaX = t.clientX - touchStartX;
+        const deltaY = t.clientY - touchStartY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+          if (deltaX < 0) {
+            document.getElementById('nextBtn').click();
+          } else {
+            document.getElementById('prevBtn').click();
+          }
+        }
+
+        touchStartX = null;
+        touchStartY = null;
+      });
+
+      // 키보드 단축키: Y/N/Enter
+      document.addEventListener('keydown', (e) => {
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const drawOverlay = document.getElementById('drawOverlay');
+
+        const isConfirmOpen = confirmOverlay.style.display === 'flex';
+        const isResultOpen = popupOverlay.style.display === 'flex';
+        const isDrawOpen = drawOverlay.style.display === 'flex';
+
+        if (isConfirmOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            confirmSelect();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            cancelSelect();
+          }
+        }
+
+        if (isResultOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          closePopup();
+        }
+
+        if (isDrawOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          applyDrawCount();
+        }
+      });
+
+      if (!loadState()) {
+        resetGame();
+      } else {
+        renderPage();
+        const resultBox = document.getElementById('resultBox');
+        if (remainingDraws > 0) {
+          resultBox.textContent =
+            '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+        } else {
+          resultBox.textContent =
+            '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
