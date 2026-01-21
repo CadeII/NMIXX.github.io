@@ -417,7 +417,7 @@
         case 4: return '4등';
         case 5: return '5등';
         case 6: return '6등';
-        case 7: return '한 번 더!';
+        case 7: return '또뽑기';  // 수정: '한 번 더!' → '또뽑기'
         default: return '';
       }
     }
@@ -583,7 +583,7 @@
         resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
       }
 
-      // 1등/2등/3등등일 때 영상 소리 나게 재생
+      // 1~3등 영상 재생 (수정됨)
       const video1 = document.getElementById('rank1Video');
       const video2 = document.getElementById('rank2Video');
       const video3 = document.getElementById('rank3Video');
@@ -595,15 +595,15 @@
         v.style.display = 'none';
       });
 
-      if (grade === 1 && video2) {
+      if (grade === 1 && video1) {
         video1.style.display = 'block';
         video1.play().catch(() => {});
       } else if (grade === 2 && video2) {
-        video6.style.display = 'block';
-        video6.play().catch(() => {});
+        video2.style.display = 'block';
+        video2.play().catch(() => {});
       } else if (grade === 3 && video3) {
-        video6.style.display = 'block';
-        video6.play().catch(() => {});
+        video3.style.display = 'block';
+        video3.play().catch(() => {});
       }
 
       // 바로 결과 팝업
@@ -613,7 +613,6 @@
       saveState();
     }
 
-    
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
@@ -631,7 +630,7 @@
         title.textContent = '5등';
       } else if (gradeLabel === '6등') {
         title.textContent = '6등';
-      } else if (gradeLabel === '또뽑기') {
+      } else if (gradeLabel === '또뽑기') {  // 수정됨
         title.textContent = '또뽑기';
       } else {
         title.textContent = '';
@@ -639,7 +638,6 @@
 
       msg.textContent = '';
 
-      // 비디오는 confirmSelect에서 이미 재생/표시 상태 유지
       overlay.style.display = 'flex';
     }
 
@@ -671,14 +669,12 @@
       const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
 
       document.getElementById('prevBtn').addEventListener('click', () => {
-        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
         saveState();
       });
 
       document.getElementById('nextBtn').addEventListener('click', () => {
-        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
         currentPage = currentPage < maxPage ? currentPage + 1 : 1;
         renderPage();
         saveState();
@@ -707,15 +703,9 @@
       });
 
       // 횟수 입력 버튼
-      document.getElementById('setDrawBtn').addEventListener('click', () => {
-        openDrawPopup();
-      });
-      document.getElementById('drawCancelBtn').addEventListener('click', () => {
-        closeDrawPopup();
-      });
-      document.getElementById('drawOkBtn').addEventListener('click', () => {
-        applyDrawCount();
-      });
+      document.getElementById('setDrawBtn').addEventListener('click', openDrawPopup);
+      document.getElementById('drawCancelBtn').addEventListener('click', closeDrawPopup);
+      document.getElementById('drawOkBtn').addEventListener('click', applyDrawCount);
       document.getElementById('drawOverlay').addEventListener('click', (e) => {
         if (e.target.id === 'drawOverlay') {
           closeDrawPopup();
@@ -753,7 +743,7 @@
         touchStartY = null;
       });
 
-      // 키보드 단축키: Y/N/Enter
+      // 키보드 단축키: Y/N/Enter/스페이스
       document.addEventListener('keydown', (e) => {
         const confirmOverlay = document.getElementById('confirmOverlay');
         const popupOverlay = document.getElementById('popupOverlay');
@@ -790,11 +780,9 @@
         renderPage();
         const resultBox = document.getElementById('resultBox');
         if (remainingDraws > 0) {
-          resultBox.textContent =
-            '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+          resultBox.textContent = '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
         } else {
-          resultBox.textContent =
-            '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+          resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
         }
       }
     });
