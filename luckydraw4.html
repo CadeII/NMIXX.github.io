@@ -50,6 +50,7 @@
     .page-buttons {
       display: flex;
       gap: 8px;
+      touch-action: manipulation;
     }
     .btn {
       padding: 6px 12px;
@@ -81,6 +82,11 @@
       background: #fafafa;
       transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
       user-select: none;
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .ticket:hover:not(.used) {
       transform: translateY(-1px);
@@ -98,6 +104,7 @@
     .grade-4 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-5 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-6 { background:#B6D7A8; border-color:#B6D7A8; }
+    .grade-7 { background:#B6D7A8; border-color:#B6D7A8; }
 
     .result-box {
       min-height: 60px;
@@ -120,7 +127,6 @@
       margin-bottom: 4px;
     }
 
-    /* 공통 팝업 오버레이 */
     .popup-overlay {
       position: fixed;
       inset: 0;
@@ -131,7 +137,6 @@
       z-index: 1000;
     }
 
-    /* 결과 팝업 */
     .popup {
       background: #fff;
       border-radius: 18px;
@@ -160,7 +165,6 @@
       cursor:pointer;
     }
 
-    /* 확인 팝업 */
     .confirm-popup {
       background: #fff;
       border-radius: 14px;
@@ -172,7 +176,7 @@
     }
     .confirm-title {
       font-size: 30px;
-      font-weight: 400;
+      font-weight: 600;
       margin-bottom: 6px;
     }
     .confirm-message {
@@ -200,7 +204,38 @@
       color: #333;
     }
 
-    @media (max-width: 400px) {
+    /* 횟수 입력 팝업 */
+    .draw-popup {
+      background: #fff;
+      border-radius: 14px;
+      padding: 32px 24px 24px;
+      max-width: 420px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+    }
+    .draw-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .draw-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .draw-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    @media (max-width: 600px) {
       .container { padding: 18px 16px 24px; }
       .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
     }
@@ -214,11 +249,11 @@
     </p>
 
     <div class="page-info">
-      <div>현재 페이지: <span id="pageText">1 / 6</span></div>
       <div class="page-buttons">
-        <button class="btn" id="prevBtn">이전 100개</button>
-        <button class="btn" id="nextBtn">다음 100개</button>
+        <button class="btn" id="prevBtn">이전</button>
+        <button class="btn" id="nextBtn">다음</button>
       </div>
+      <button class="btn" id="setDrawBtn">횟수 입력</button>
     </div>
 
     <div class="tickets" id="ticketsContainer"></div>
@@ -238,6 +273,35 @@
     <div class="popup">
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-message" id="popupMessage"></div>
+
+      <!-- 1등용 영상 -->
+      <video
+        id="rank1Video"
+        style="display:none; width:100%; max-height:300px;"
+        preload="auto"
+        playsinline
+      >
+        <source src="1st.mp4" type="video/mp4">
+      </video>
+      <!-- 2등용 영상 -->
+      <video
+        id="rank2Video"
+        style="display:none; width:100%; max-height:300px;"
+        preload="auto"
+        playsinline
+      >
+        <source src="2nd.mp4" type="video/mp4">
+      </video>
+      <!-- 3등용 영상 -->
+      <video
+        id="rank3Video"
+        style="display:none; width:100%; max-height:300px;"
+        preload="auto"
+        playsinline
+      >
+        <source src="3rd.mp4" type="video/mp4">
+      </video>
+      
       <button onclick="closePopup()">확인</button>
     </div>
   </div>
@@ -254,23 +318,37 @@
     </div>
   </div>
 
-  <script>
-    const TOTAL_TICKETS = 400;
-    const PAGE_SIZE = 100;
+  <!-- 횟수 입력 팝업 -->
+  <div class="popup-overlay" id="drawOverlay">
+    <div class="draw-popup">
+      <div class="draw-title">뽑기 횟수 입력</div>
+      <input type="number" id="drawInput" class="draw-input" min="1" placeholder="예: 5">
+      <div class="draw-buttons">
+        <button class="btn" id="drawCancelBtn">취소</button>
+        <button class="btn" id="drawOkBtn">확인</button>
+      </div>
+    </div>
+  </div>
 
-    // 등수별 개수 (합이 400이 되도록 맞추기)
+  <script>
+    const TOTAL_TICKETS = 700;
+    const PAGE_SIZE = 50;
+
     const gradeCounts = {
-      1: 3,
-      2: 6,
-      3: 16,
-      4: 25,
-      5: 150,
-      6: 200
+      1: 4,
+      2: 9,
+      3: 24,
+      4: 36,
+      5: 227,
+      6: 320
     };
 
-    let tickets = [];      // { index:0~599, grade:1~6, used:false }
-    let currentPage = 1;   // 1~6
-    let pendingIndex = null; // 확인 대기 중인 티켓 인덱스
+    let tickets = [];
+    let currentPage = 1;
+    let pendingIndex = null;
+    let remainingDraws = 0;
+
+    const STORAGE_KEY = 'lotto600_state_v1';
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -290,9 +368,9 @@
           gradeList.push(parseInt(g, 10));
         }
       });
-
-      if (gradeList.length !== TOTAL_TICKETS) {
-        console.warn('등수 개수 합이 TOTAL_TICKETS와 다릅니다. 실제:', gradeList.length);
+      const EXTRA_RETRY = 80;
+      for (let i = 0; i < EXTRA_RETRY; i++) {
+        gradeList.push(7);
       }
 
       shuffle(gradeList);
@@ -319,7 +397,7 @@
         let cls = 'ticket';
         if (t.used) cls += ' used grade-' + t.grade;
         btn.className = cls;
-        btn.textContent = (t.index + 1); // 1~400 표시
+        btn.textContent = '';
 
         if (!t.used) {
           btn.addEventListener('click', () => handleTicketClick(i));
@@ -327,12 +405,8 @@
         container.appendChild(btn);
       }
 
-      document.getElementById('pageText').textContent =
-        currentPage + ' / ' + Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
-
-      document.getElementById('prevBtn').disabled = currentPage === 1;
-      document.getElementById('nextBtn').disabled =
-        currentPage === Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+      document.getElementById('prevBtn').disabled = false;
+      document.getElementById('nextBtn').disabled = false;
     }
 
     function gradeText(grade) {
@@ -343,18 +417,17 @@
         case 4: return '4등';
         case 5: return '5등';
         case 6: return '6등';
+        case 7: return '한 번 더!';
         default: return '';
       }
     }
-
-    // ---- 상태 저장 / 불러오기 (localStorage) ----
-    const STORAGE_KEY = 'lotto400_state_v1';
 
     function saveState() {
       const state = {
         tickets,
         currentPage,
-        resultText: document.getElementById('resultBox').textContent
+        resultText: document.getElementById('resultBox').textContent,
+        remainingDraws
       };
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -373,6 +446,7 @@
 
         tickets = state.tickets;
         currentPage = state.currentPage || 1;
+        remainingDraws = typeof state.remainingDraws === 'number' ? state.remainingDraws : 0;
         document.getElementById('resultBox').textContent =
           state.resultText || '복권을 선택해 보세요.';
         return true;
@@ -382,12 +456,12 @@
       }
     }
 
-    // ---- JSON 파일로 내보내기 / 불러오기 ----
     function downloadStateFile() {
       const state = {
         tickets,
         currentPage,
         resultText: document.getElementById('resultBox').textContent,
+        remainingDraws,
         savedAt: new Date().toISOString()
       };
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -395,7 +469,7 @@
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'lotto400_state.json';
+      a.download = 'lotto600_state.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -413,6 +487,7 @@
           }
           tickets = data.tickets;
           currentPage = data.currentPage || 1;
+          remainingDraws = typeof data.remainingDraws === 'number' ? data.remainingDraws : 0;
           document.getElementById('resultBox').textContent =
             data.resultText || '복권을 선택해 보세요.';
           renderPage();
@@ -425,14 +500,52 @@
       reader.readAsText(file, 'utf-8');
     }
 
-    // ---- 티켓 선택 흐름 (확인 팝업 포함) ----
+    // 횟수 입력 팝업 열기
+    function openDrawPopup() {
+      const overlay = document.getElementById('drawOverlay');
+      const input = document.getElementById('drawInput');
+      input.value = remainingDraws > 0 ? String(remainingDraws) : '';
+      overlay.style.display = 'flex';
+      input.focus();
+    }
+
+    function closeDrawPopup() {
+      document.getElementById('drawOverlay').style.display = 'none';
+    }
+
+    function applyDrawCount() {
+      const input = document.getElementById('drawInput');
+      const n = parseInt(input.value, 10);
+      if (!isNaN(n) && n > 0) {
+        remainingDraws = n;
+      } else {
+        remainingDraws = 0;
+      }
+
+      const resultBox = document.getElementById('resultBox');
+      if (remainingDraws > 0) {
+        resultBox.textContent = '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+      } else {
+        resultBox.textContent = '남은 뽑기 횟수가 없습니다.';
+      }
+
+      closeDrawPopup();
+      saveState();
+    }
+
     function handleTicketClick(i) {
       const t = tickets[i];
       if (t.used) return;
 
+      if (remainingDraws <= 0) {
+        const resultBox = document.getElementById('resultBox');
+        resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+        return;
+      }
+
       pendingIndex = i;
       const msg = document.getElementById('confirmMessage');
-      msg.textContent = (t.index + 1) + '번 복권을 선택할까요?';
+      msg.textContent = '복권을 선택할까요?';
 
       document.getElementById('confirmOverlay').style.display = 'flex';
     }
@@ -457,15 +570,50 @@
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
 
-      resultBox.textContent =
-        (t.index + 1) + '번 복권: ' + gradeLabel + ' 당첨!';
+      // 또뽑기(7등)가 아닐 때만 횟수 차감
+      if (grade !== 7) {
+        if (remainingDraws > 0) {
+          remainingDraws -= 1;
+        }
+      }
 
+      if (remainingDraws > 0) {
+        resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)';
+      } else {
+        resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
+      }
+
+      // 1등/2등/3등등일 때 영상 소리 나게 재생
+      const video1 = document.getElementById('rank1Video');
+      const video2 = document.getElementById('rank2Video');
+      const video3 = document.getElementById('rank3Video');
+      [video1, video2, video3].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.muted = false;
+        v.style.display = 'none';
+      });
+
+      if (grade === 1 && video2) {
+        video1.style.display = 'block';
+        video1.play().catch(() => {});
+      } else if (grade === 2 && video2) {
+        video6.style.display = 'block';
+        video6.play().catch(() => {});
+      } else if (grade === 3 && video3) {
+        video6.style.display = 'block';
+        video6.play().catch(() => {});
+      }
+
+      // 바로 결과 팝업
       showPopup(gradeLabel);
+
       renderPage();
       saveState();
     }
 
-    // ---- 결과 팝업 ----
+    
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
@@ -481,14 +629,32 @@
         title.textContent = '4등';
       } else if (gradeLabel === '5등') {
         title.textContent = '5등';
-      } else {
+      } else if (gradeLabel === '6등') {
         title.textContent = '6등';
+      } else if (gradeLabel === '또뽑기') {
+        title.textContent = '또뽑기';
+      } else {
+        title.textContent = '';
       }
 
+      msg.textContent = '';
+
+      // 비디오는 confirmSelect에서 이미 재생/표시 상태 유지
       overlay.style.display = 'flex';
     }
 
     function closePopup() {
+      const video1 = document.getElementById('rank1Video');
+      const video2 = document.getElementById('rank2Video');
+      const video3 = document.getElementById('rank3Video');
+
+      [video1, video2, video3].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.style.display = 'none';
+      });
+
       document.getElementById('popupOverlay').style.display = 'none';
     }
 
@@ -496,27 +662,26 @@
       initTickets();
       currentPage = 1;
       document.getElementById('resultBox').textContent = '복권을 선택해 보세요.';
+      remainingDraws = 0;
       renderPage();
       saveState();
     }
 
-    // ---- 초기 설정 ----
     document.addEventListener('DOMContentLoaded', () => {
+      const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+
       document.getElementById('prevBtn').addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderPage();
-          saveState();
-        }
+        const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+        currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
+        renderPage();
+        saveState();
       });
 
       document.getElementById('nextBtn').addEventListener('click', () => {
         const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
-        if (currentPage < maxPage) {
-          currentPage++;
-          renderPage();
-          saveState();
-        }
+        currentPage = currentPage < maxPage ? currentPage + 1 : 1;
+        renderPage();
+        saveState();
       });
 
       document.getElementById('resetBtn').addEventListener('click', () => {
@@ -535,10 +700,87 @@
         if (file) importStateFromFile(file);
       });
 
-      // 결과 팝업 바깥(어두운 영역) 클릭 시 닫기
       document.getElementById('popupOverlay').addEventListener('click', (e) => {
         if (e.target.id === 'popupOverlay') {
           closePopup();
+        }
+      });
+
+      // 횟수 입력 버튼
+      document.getElementById('setDrawBtn').addEventListener('click', () => {
+        openDrawPopup();
+      });
+      document.getElementById('drawCancelBtn').addEventListener('click', () => {
+        closeDrawPopup();
+      });
+      document.getElementById('drawOkBtn').addEventListener('click', () => {
+        applyDrawCount();
+      });
+      document.getElementById('drawOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'drawOverlay') {
+          closeDrawPopup();
+        }
+      });
+
+      // 스와이프 페이지 전환
+      let touchStartX = null;
+      let touchStartY = null;
+      const SWIPE_THRESHOLD = 50;
+      const swipeTarget = document.getElementById('ticketsContainer');
+
+      swipeTarget.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+      });
+
+      swipeTarget.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+
+        const t = e.changedTouches[0];
+        const deltaX = t.clientX - touchStartX;
+        const deltaY = t.clientY - touchStartY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+          if (deltaX < 0) {
+            document.getElementById('nextBtn').click();
+          } else {
+            document.getElementById('prevBtn').click();
+          }
+        }
+
+        touchStartX = null;
+        touchStartY = null;
+      });
+
+      // 키보드 단축키: Y/N/Enter
+      document.addEventListener('keydown', (e) => {
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const drawOverlay = document.getElementById('drawOverlay');
+
+        const isConfirmOpen = confirmOverlay.style.display === 'flex';
+        const isResultOpen = popupOverlay.style.display === 'flex';
+        const isDrawOpen = drawOverlay.style.display === 'flex';
+
+        if (isConfirmOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            confirmSelect();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            cancelSelect();
+          }
+        }
+
+        if (isResultOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          closePopup();
+        }
+
+        if (isDrawOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          applyDrawCount();
         }
       });
 
@@ -546,8 +788,17 @@
         resetGame();
       } else {
         renderPage();
+        const resultBox = document.getElementById('resultBox');
+        if (remainingDraws > 0) {
+          resultBox.textContent =
+            '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+        } else {
+          resultBox.textContent =
+            '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+        }
       }
     });
   </script>
+
 </body>
 </html>
