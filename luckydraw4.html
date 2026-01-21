@@ -417,7 +417,7 @@
         case 4: return '4등';
         case 5: return '5등';
         case 6: return '6등';
-        case 7: return '또뽑기';  // 수정: '한 번 더!' → '또뽑기'
+        case 7: return '한 번 더!';  // 수정: '한 번 더!' → '한 번 더!'
         default: return '';
       }
     }
@@ -570,7 +570,7 @@
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
 
-      // 또뽑기(7등)가 아닐 때만 횟수 차감
+      // 한 번 더!(7등)가 아닐 때만 횟수 차감
       if (grade !== 7) {
         if (remainingDraws > 0) {
           remainingDraws -= 1;
@@ -630,8 +630,8 @@
         title.textContent = '5등';
       } else if (gradeLabel === '6등') {
         title.textContent = '6등';
-      } else if (gradeLabel === '또뽑기') {  // 수정됨
-        title.textContent = '또뽑기';
+      } else if (gradeLabel === '한 번 더!') {  // 수정됨
+        title.textContent = '한 번 더!';
       } else {
         title.textContent = '';
       }
