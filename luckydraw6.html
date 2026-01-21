@@ -581,36 +581,44 @@
 
     function closePasswordPopup() {
       document.getElementById('passwordOverlay').style.display = 'none';
-      pendingAction = null; // 초기화
+      document.getElementById('passwordInput').value = '';
+      pendingAction = null;
     }
 
+
+    
     function checkPassword() {
       const input = document.getElementById('passwordInput').value;
-      
-      if (input === PASSWORD) {
+
+
+       if (input === PASSWORD) {
         closePasswordPopup();
-        
-        // 각 액션별 처리
-        switch (pendingAction) {
+
+
+
+
+
+
+         switch (pendingAction) {
           case 'reset':
             localStorage.removeItem(STORAGE_KEY);
             resetGame();
-            alert('초기화 완료!');
+            alert('✅ 전체 다시 섞기 완료!');
             break;
           case 'export':
             downloadStateFile();
             break;
           case 'import':
-            // import는 직접 파일 선택을 트리거
             document.getElementById('importInput').click();
             break;
         }
+        pendingAction = null; // 중요: 초기화
       } else {
-        alert('❌ 비밀번호가 틀렸습니다. (힌트: 1234)');
+        alert('❌ 비밀번호 오류! (힌트: 1234)');
         document.getElementById('passwordInput').value = '';
         document.getElementById('passwordInput').focus();
       }
-    }
+    } 
 
     // 횟수 입력 팝업 관련 함수들
     function openDrawPopup() {
@@ -764,29 +772,36 @@
       };
 
       // 도구 버튼들
+
       document.getElementById('resetBtn').onclick = () => 
-        openActionConfirm('reset', '전체 다시 섞기', '모든 기록이 삭제됩니다. 진행하시겠습니까?');
+        openActionConfirm('reset', '전체 다시 섞기', '모든 기록 삭제됩니다.');
       
       document.getElementById('exportBtn').onclick = () => 
-        openActionConfirm('export', '기록 저장', '현재 상태를 파일로 저장합니다.');
+        openActionConfirm('export', '기록 저장', '파일로 다운로드합니다.');
       
       document.getElementById('importBtn').onclick = () => 
-        openActionConfirm('import', '기록 불러오기', '현재 상태가 덮어씌워집니다.');
-
+        openActionConfirm('import', '기록 불러오기', '현재 상태 덮어씌워집니다.');
+      
       // 파일 입력 처리 (비밀번호 확인 후 실행됨)
       document.getElementById('importInput').onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
           importStateFromFile(file);
-          e.target.value = ''; // 리셋
+          e.target.value = '';
+          pendingAction = null;
         }
       };
 
       // 팝업 이벤트들
       document.getElementById('actionConfirmYes').onclick = () => {
+        if (!pendingAction) return; // 안전장치
         closeActionConfirm();
         openPasswordPopup();
       };
+
+
+
+      
       document.getElementById('actionConfirmNo').onclick = closeActionConfirm;
       
       document.getElementById('passwordCancelBtn').onclick = closePasswordPopup;
