@@ -482,7 +482,7 @@
         type="password"
         id="passwordInput"
         class="password-input"
-        placeholder="비밀번호"
+        placeholder="PASSWORD"
         autocomplete="off"
       >
       <div class="password-hint" id="passwordHint"></div>
@@ -518,7 +518,7 @@
     let drawHistory = [];
     let historyLimit = 0;
 
-    const STORAGE_KEY = 'lotto600_state_v1';
+    const STORAGE_KEY = 'lotto_day_state_v1';
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -682,7 +682,7 @@
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'lotto600_state.json';
+      a.download = 'lotto_day_state.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
