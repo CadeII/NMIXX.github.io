@@ -97,7 +97,6 @@
       opacity: 0.6;
     }
 
-    /* 등급별 색 */
     .grade-1 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-2 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-3 { background:#B6D7A8; border-color:#B6D7A8; }
@@ -204,7 +203,6 @@
       color: #333;
     }
 
-    /* 횟수 입력 팝업 */
     .draw-popup {
       background: #fff;
       border-radius: 14px;
@@ -235,37 +233,68 @@
       gap: 10px;
     }
 
-    /* 비밀번호 입력 팝업 */
+    /* === 작업 확인 팝업 === */
+    .action-confirm-popup {
+      background:#fff;
+      border-radius:14px;
+      padding:32px 24px 24px;
+      max-width:420px;
+      width:calc(100% - 40px);
+      text-align:center;
+      box-shadow:0 14px 35px rgba(0,0,0,0.3);
+    }
+    .action-confirm-title {
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:8px;
+    }
+    .action-confirm-message {
+      font-size:15px;
+      margin-bottom:18px;
+    }
+    .action-confirm-buttons {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+    }
+
+    /* === 비밀번호 팝업 === */
     .password-popup {
-      background: #fff;
-      border-radius: 14px;
-      padding: 32px 24px 24px;
-      max-width: 420px;
-      width: calc(100% - 40px);
-      text-align: center;
-      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+      background:#fff;
+      border-radius:14px;
+      padding:32px 24px 24px;
+      max-width:420px;
+      width:calc(100% - 40px);
+      text-align:center;
+      box-shadow:0 14px 35px rgba(0,0,0,0.3);
     }
     .password-title {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 10px;
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:8px;
     }
     .password-input {
-      width: 100%;
-      padding: 12px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 16px;
-      box-sizing: border-box;
-      text-align: center;
+      width:100%;
+      padding:10px 12px;
+      font-size:16px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      margin-bottom:10px;
+      box-sizing:border-box;
+      text-align:center;
       font-family: monospace;
-      letter-spacing: 2px;
+      letter-spacing: 4px;
+    }
+    .password-hint {
+      font-size:12px;
+      color:#888;
+      margin-bottom:14px;
+      min-height:16px;
     }
     .password-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+      display:flex;
+      justify-content:center;
+      gap:10px;
     }
 
     @media (max-width: 600px) {
@@ -307,7 +336,6 @@
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-message" id="popupMessage"></div>
 
-      <!-- 1등용 영상 -->
       <video
         id="rank1Video"
         style="display:none; width:100%; max-height:300px;"
@@ -316,7 +344,6 @@
       >
         <source src="1st.mp4" type="video/mp4">
       </video>
-      <!-- 2등용 영상 -->
       <video
         id="rank2Video"
         style="display:none; width:100%; max-height:300px;"
@@ -325,7 +352,6 @@
       >
         <source src="2nd.mp4" type="video/mp4">
       </video>
-      <!-- 3등용 영상 -->
       <video
         id="rank3Video"
         style="display:none; width:100%; max-height:300px;"
@@ -339,7 +365,7 @@
     </div>
   </div>
 
-  <!-- 선택 확인 팝업 -->
+  <!-- 번호 선택 확인 팝업 -->
   <div class="popup-overlay" id="confirmOverlay">
     <div class="confirm-popup">
       <div class="confirm-title">번호 선택</div>
@@ -363,14 +389,14 @@
     </div>
   </div>
 
-  <!-- 작업 확인 팝업 -->
+  <!-- 작업 확인 팝업 (전체섞기/저장/불러오기 공통) -->
   <div class="popup-overlay" id="actionConfirmOverlay">
-    <div class="confirm-popup">
-      <div class="confirm-title" id="actionConfirmTitle">작업 확인</div>
-      <div class="confirm-message" id="actionConfirmMessage">진행하시겠습니까?</div>
-      <div class="confirm-buttons">
-        <button class="confirm-btn confirm-no" id="actionConfirmNo">아니오</button>
-        <button class="confirm-btn confirm-yes" id="actionConfirmYes">예</button>
+    <div class="action-confirm-popup">
+      <div class="action-confirm-title">작업 확인</div>
+      <div class="action-confirm-message" id="actionConfirmMessage"></div>
+      <div class="action-confirm-buttons">
+        <button class="btn" id="actionCancelBtn">아니오</button>
+        <button class="btn" id="actionOkBtn">예</button>
       </div>
     </div>
   </div>
@@ -379,7 +405,14 @@
   <div class="popup-overlay" id="passwordOverlay">
     <div class="password-popup">
       <div class="password-title">비밀번호 입력</div>
-      <input type="password" id="passwordInput" class="password-input" placeholder="••••••" maxlength="20">
+      <input
+        type="password"
+        id="passwordInput"
+        class="password-input"
+        placeholder="비밀번호"
+        autocomplete="off"
+      >
+      <div class="password-hint" id="passwordHint"></div>
       <div class="password-buttons">
         <button class="btn" id="passwordCancelBtn">취소</button>
         <button class="btn" id="passwordOkBtn">확인</button>
@@ -390,7 +423,6 @@
   <script>
     const TOTAL_TICKETS = 700;
     const PAGE_SIZE = 50;
-    const PASSWORD = '1234'; // 비밀번호 (F12 콘솔에서 확인 가능)
 
     const gradeCounts = {
       1: 4,
@@ -401,13 +433,17 @@
       6: 320
     };
 
+    const PASSWORD = '1234'; // 비밀번호
+
     let tickets = [];
     let currentPage = 1;
     let pendingIndex = null;
     let remainingDraws = 0;
-    let pendingAction = null; // 'reset', 'export', 'import'
 
     const STORAGE_KEY = 'lotto600_state_v1';
+
+    // 전체/저장/불러오기용 상태
+    let pendingAction = null; // 'reset' | 'export' | 'import'
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -531,9 +567,9 @@
       a.download = 'lotto600_state.json';
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      a.remove();
       URL.revokeObjectURL(url);
-      alert('파일이 저장되었습니다.');
+      alert('기록을 파일로 저장했습니다.');
     }
 
     function importStateFromFile(file) {
@@ -554,73 +590,15 @@
           saveState();
           alert('기록을 불러왔습니다.');
         } catch (err) {
-          alert('기록 파일을 읽는 중 오류가 발생했습니다: ' + err.message);
+          alert('기록 파일을 읽는 중 오류가 발생했습니다.');
+        } finally {
+          document.getElementById('importInput').value = '';
         }
       };
       reader.readAsText(file, 'utf-8');
     }
 
-    // 작업 확인 팝업 열기
-    function openActionConfirm(action, title, message) {
-      pendingAction = action;
-      document.getElementById('actionConfirmTitle').textContent = title;
-      document.getElementById('actionConfirmMessage').textContent = message;
-      document.getElementById('actionConfirmOverlay').style.display = 'flex';
-    }
-
-    function closeActionConfirm() {
-      document.getElementById('actionConfirmOverlay').style.display = 'none';
-    }
-
-    // 비밀번호 팝업 열기
-    function openPasswordPopup() {
-      document.getElementById('passwordInput').value = '';
-      document.getElementById('passwordOverlay').style.display = 'flex';
-      document.getElementById('passwordInput').focus();
-    }
-
-    function closePasswordPopup() {
-      document.getElementById('passwordOverlay').style.display = 'none';
-      document.getElementById('passwordInput').value = '';
-      pendingAction = null;
-    }
-
-
-    
-    function checkPassword() {
-      const input = document.getElementById('passwordInput').value;
-
-
-       if (input === PASSWORD) {
-        closePasswordPopup();
-
-
-
-
-
-
-         switch (pendingAction) {
-          case 'reset':
-            localStorage.removeItem(STORAGE_KEY);
-            resetGame();
-            alert('✅ 전체 다시 섞기 완료!');
-            break;
-          case 'export':
-            downloadStateFile();
-            break;
-          case 'import':
-            document.getElementById('importInput').click();
-            break;
-        }
-        pendingAction = null; // 중요: 초기화
-      } else {
-        alert('❌ 비밀번호 오류! (힌트: 1234)');
-        document.getElementById('passwordInput').value = '';
-        document.getElementById('passwordInput').focus();
-      }
-    } 
-
-    // 횟수 입력 팝업 관련 함수들
+    // 횟수 입력 팝업
     function openDrawPopup() {
       const overlay = document.getElementById('drawOverlay');
       const input = document.getElementById('drawInput');
@@ -653,7 +631,6 @@
       saveState();
     }
 
-    // 기존 뽑기 관련 함수들 (변경없음)
     function handleTicketClick(i) {
       const t = tickets[i];
       if (t.used) return;
@@ -665,7 +642,9 @@
       }
 
       pendingIndex = i;
-      document.getElementById('confirmMessage').textContent = '복권을 선택할까요?';
+      const msg = document.getElementById('confirmMessage');
+      msg.textContent = '복권을 선택할까요?';
+
       document.getElementById('confirmOverlay').style.display = 'flex';
     }
 
@@ -684,38 +663,47 @@
       if (t.used) return;
 
       t.used = true;
+
       const grade = t.grade;
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
 
       if (grade !== 7) {
-        if (remainingDraws > 0) remainingDraws -= 1;
+        if (remainingDraws > 0) {
+          remainingDraws -= 1;
+        }
       }
 
-      resultBox.textContent = remainingDraws > 0 
-        ? gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)'
-        : gradeLabel + ' 당첨! (남은 횟수: 0회)';
+      if (remainingDraws > 0) {
+        resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)';
+      } else {
+        resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: 0회)';
+      }
 
-      // 영상 재생 (기존 로직)
-      const videos = ['rank1Video', 'rank2Video', 'rank3Video'];
-      videos.forEach(id => {
-        const video = document.getElementById(id);
-        if (video) {
-          video.pause();
-          video.currentTime = 0;
-          video.style.display = 'none';
-        }
+      const video1 = document.getElementById('rank1Video');
+      const video2 = document.getElementById('rank2Video');
+      const video3 = document.getElementById('rank3Video');
+      [video1, video2, video3].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.muted = false;
+        v.style.display = 'none';
       });
 
-      if (grade <= 3) {
-        const video = document.getElementById(`rank${grade}Video`);
-        if (video) {
-          video.style.display = 'block';
-          video.play().catch(() => {});
-        }
+      if (grade === 1 && video1) {
+        video1.style.display = 'block';
+        video1.play().catch(() => {});
+      } else if (grade === 2 && video2) {
+        video2.style.display = 'block';
+        video2.play().catch(() => {});
+      } else if (grade === 3 && video3) {
+        video3.style.display = 'block';
+        video3.play().catch(() => {});
       }
 
       showPopup(gradeLabel);
+
       renderPage();
       saveState();
     }
@@ -723,115 +711,293 @@
     function showPopup(gradeLabel) {
       const overlay = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
-      
-      const titles = {
-        '1등': '1등!', '2등': '2등!', '3등': '3등!',
-        '4등': '4등', '5등': '5등', '6등': '6등', '한 번 더!': '한 번 더!'
-      };
-      
-      title.textContent = titles[gradeLabel] || '';
+      const msg = document.getElementById('popupMessage');
+
+      if (gradeLabel === '1등') {
+        title.textContent = '1등!';
+      } else if (gradeLabel === '2등') {
+        title.textContent = '2등!';
+      } else if (gradeLabel === '3등') {
+        title.textContent = '3등!';
+      } else if (gradeLabel === '4등') {
+        title.textContent = '4등';
+      } else if (gradeLabel === '5등') {
+        title.textContent = '5등';
+      } else if (gradeLabel === '6등') {
+        title.textContent = '6등';
+      } else if (gradeLabel === '한 번 더!') {
+        title.textContent = '한 번 더!';
+      } else {
+        title.textContent = '';
+      }
+
+      msg.textContent = '';
+
       overlay.style.display = 'flex';
     }
 
     function closePopup() {
-      const videos = ['rank1Video', 'rank2Video', 'rank3Video'];
-      videos.forEach(id => {
-        const video = document.getElementById(id);
-        if (video) {
-          video.pause();
-          video.currentTime = 0;
-          video.style.display = 'none';
-        }
+      const video1 = document.getElementById('rank1Video');
+      const video2 = document.getElementById('rank2Video');
+      const video3 = document.getElementById('rank3Video');
+
+      [video1, video2, video3].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.style.display = 'none';
       });
+
       document.getElementById('popupOverlay').style.display = 'none';
     }
 
     function resetGame() {
       initTickets();
       currentPage = 1;
-      remainingDraws = 0;
       document.getElementById('resultBox').textContent = '복권을 선택해 보세요.';
+      remainingDraws = 0;
       renderPage();
       saveState();
     }
 
-    // DOM 로드 완료 후 이벤트 바인딩
+    // === 작업 확인 + 비밀번호 흐름 ===
+    function openActionConfirm(action) {
+      pendingAction = action;
+      const msgEl = document.getElementById('actionConfirmMessage');
+      if (action === 'reset') {
+        msgEl.textContent = '정말 전체를 다시 섞을까요? (기록이 모두 초기화됩니다)';
+      } else if (action === 'export') {
+        msgEl.textContent = '현재 기록을 파일로 저장할까요?';
+      } else if (action === 'import') {
+        msgEl.textContent = '기록 파일을 불러올까요? (기존 기록이 바뀔 수 있습니다)';
+      } else {
+        msgEl.textContent = '';
+      }
+      document.getElementById('actionConfirmOverlay').style.display = 'flex';
+    }
+
+    function closeActionConfirm() {
+      document.getElementById('actionConfirmOverlay').style.display = 'none';
+    }
+
+    function openPasswordPopup() {
+      const overlay = document.getElementById('passwordOverlay');
+      const input = document.getElementById('passwordInput');
+      const hint = document.getElementById('passwordHint');
+      input.value = '';
+      hint.textContent = '';
+      overlay.style.display = 'flex';
+      input.focus();
+    }
+
+    function closePasswordPopup() {
+      document.getElementById('passwordOverlay').style.display = 'none';
+    }
+
+    function checkPasswordAndRun() {
+      const input = document.getElementById('passwordInput');
+      const hint = document.getElementById('passwordHint');
+      const value = input.value.trim();
+
+      if (value !== PASSWORD) {
+        hint.textContent = '비밀번호가 올바르지 않습니다.';
+        input.focus();
+        return;
+      }
+
+      closePasswordPopup();
+
+      if (pendingAction === 'reset') {
+        localStorage.removeItem(STORAGE_KEY);
+        resetGame();
+        alert('초기화가 완료되었습니다.');
+      } else if (pendingAction === 'export') {
+        downloadStateFile();
+      } else if (pendingAction === 'import') {
+        const fileInput = document.getElementById('importInput');
+        fileInput.click();
+      }
+
+      pendingAction = null;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
 
-      // 페이지 이동
-      document.getElementById('prevBtn').onclick = () => {
+      document.getElementById('prevBtn').addEventListener('click', () => {
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
         saveState();
-      };
-      document.getElementById('nextBtn').onclick = () => {
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
         currentPage = currentPage < maxPage ? currentPage + 1 : 1;
         renderPage();
         saveState();
-      };
+      });
 
-      // 도구 버튼들
+      // 세 버튼: 확인 팝업 → 비밀번호
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        openActionConfirm('reset');
+      });
 
-      document.getElementById('resetBtn').onclick = () => 
-        openActionConfirm('reset', '전체 다시 섞기', '모든 기록 삭제됩니다.');
-      
-      document.getElementById('exportBtn').onclick = () => 
-        openActionConfirm('export', '기록 저장', '파일로 다운로드합니다.');
-      
-      document.getElementById('importBtn').onclick = () => 
-        openActionConfirm('import', '기록 불러오기', '현재 상태 덮어씌워집니다.');
-      
-      // 파일 입력 처리 (비밀번호 확인 후 실행됨)
-      document.getElementById('importInput').onchange = (e) => {
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        openActionConfirm('export');
+      });
+
+      document.getElementById('importBtn').addEventListener('click', () => {
+        openActionConfirm('import');
+      });
+
+      document.getElementById('importInput').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
           importStateFromFile(file);
-          e.target.value = '';
-          pendingAction = null;
         }
-      };
+      });
 
-      // 팝업 이벤트들
-      document.getElementById('actionConfirmYes').onclick = () => {
-        if (!pendingAction) return; // 안전장치
+      // 작업 확인 팝업 버튼
+      document.getElementById('actionCancelBtn').addEventListener('click', () => {
+        pendingAction = null;
         closeActionConfirm();
-        openPasswordPopup();
-      };
+      });
+      document.getElementById('actionOkBtn').addEventListener('click', () => {
+        closeActionConfirm();
+        if (pendingAction) {
+          openPasswordPopup();
+        }
+      });
 
+      document.getElementById('actionConfirmOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'actionConfirmOverlay') {
+          pendingAction = null;
+          closeActionConfirm();
+        }
+      });
 
+      // 비밀번호 팝업 버튼
+      document.getElementById('passwordCancelBtn').addEventListener('click', () => {
+        pendingAction = null;
+        closePasswordPopup();
+      });
+      document.getElementById('passwordOkBtn').addEventListener('click', checkPasswordAndRun);
+      document.getElementById('passwordOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'passwordOverlay') {
+          pendingAction = null;
+          closePasswordPopup();
+        }
+      });
 
-      
-      document.getElementById('actionConfirmNo').onclick = closeActionConfirm;
-      
-      document.getElementById('passwordCancelBtn').onclick = closePasswordPopup;
-      document.getElementById('passwordOkBtn').onclick = checkPassword;
+      document.getElementById('popupOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'popupOverlay') {
+          closePopup();
+        }
+      });
 
-      document.getElementById('setDrawBtn').onclick = openDrawPopup;
-      document.getElementById('drawCancelBtn').onclick = closeDrawPopup;
-      document.getElementById('drawOkBtn').onclick = applyDrawCount;
+      // 횟수 입력 버튼
+      document.getElementById('setDrawBtn').addEventListener('click', openDrawPopup);
+      document.getElementById('drawCancelBtn').addEventListener('click', closeDrawPopup);
+      document.getElementById('drawOkBtn').addEventListener('click', applyDrawCount);
+      document.getElementById('drawOverlay').addEventListener('click', (e) => {
+        if (e.target.id === 'drawOverlay') {
+          closeDrawPopup();
+        }
+      });
 
-      // 오버레이 클릭으로 닫기
-      ['popupOverlay', 'confirmOverlay', 'drawOverlay', 'actionConfirmOverlay', 'passwordOverlay']
-        .forEach(id => {
-          document.getElementById(id).onclick = (e) => {
-            if (e.target.id === id) {
-              if (id === 'popupOverlay') closePopup();
-              else if (id === 'confirmOverlay') cancelSelect();
-              else if (id === 'drawOverlay') closeDrawPopup();
-              else if (id === 'actionConfirmOverlay') closeActionConfirm();
-              else if (id === 'passwordOverlay') closePasswordPopup();
-            }
-          };
-        });
+      // 스와이프 페이지 전환
+      let touchStartX = null;
+      let touchStartY = null;
+      const SWIPE_THRESHOLD = 50;
+      const swipeTarget = document.getElementById('ticketsContainer');
 
-      // 초기화
+      swipeTarget.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+      });
+
+      swipeTarget.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+
+        const t = e.changedTouches[0];
+        const deltaX = t.clientX - touchStartX;
+        const deltaY = t.clientY - touchStartY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+          if (deltaX < 0) {
+            document.getElementById('nextBtn').click();
+          } else {
+            document.getElementById('prevBtn').click();
+          }
+        }
+
+        touchStartX = null;
+        touchStartY = null;
+      });
+
+      // 키보드 단축키
+      document.addEventListener('keydown', (e) => {
+        const confirmOverlay = document.getElementById('confirmOverlay');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const drawOverlay = document.getElementById('drawOverlay');
+        const actionOverlay = document.getElementById('actionConfirmOverlay');
+        const passwordOverlay = document.getElementById('passwordOverlay');
+
+        const isConfirmOpen = confirmOverlay.style.display === 'flex';
+        const isResultOpen = popupOverlay.style.display === 'flex';
+        const isDrawOpen = drawOverlay.style.display === 'flex';
+        const isActionOpen = actionOverlay.style.display === 'flex';
+        const isPasswordOpen = passwordOverlay.style.display === 'flex';
+
+        if (isConfirmOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            confirmSelect();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            cancelSelect();
+          }
+        }
+
+        if (isResultOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          closePopup();
+        }
+
+        if (isDrawOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          applyDrawCount();
+        }
+
+        if (isActionOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            document.getElementById('actionOkBtn').click();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            document.getElementById('actionCancelBtn').click();
+          }
+        }
+
+        if (isPasswordOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          checkPasswordAndRun();
+        }
+      });
+
       if (!loadState()) {
         resetGame();
       } else {
         renderPage();
+        const resultBox = document.getElementById('resultBox');
+        if (remainingDraws > 0) {
+          resultBox.textContent = '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+        } else {
+          resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+        }
       }
     });
   </script>
+
 </body>
 </html>
