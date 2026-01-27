@@ -386,7 +386,7 @@
   <div class="popup-overlay" id="passwordOverlay">
     <div class="password-popup">
       <div class="password-title">비밀번호 입력</div>
-      <input type="password" id="passwordInput" class="password-input" placeholder="비밀번호" autocomplete="off">
+      <input type="password" id="passwordInput" class="password-input" placeholder="PASSWORD" autocomplete="off">
       <div class="password-hint" id="passwordHint"></div>
       <div class="password-buttons">
         <button class="btn" id="passwordCancelBtn">취소</button>
@@ -401,7 +401,7 @@
 
     const gradeCounts = { 1: 4, 2: 9, 3: 24, 4: 36, 5: 227, 6: 320 };
 
-    const PASSWORD = '1234';
+    const PASSWORD = '2022';
 
     let tickets = [];
     let currentPage = 1;
@@ -410,7 +410,7 @@
     let pendingAction = null;
     let pendingImportFile = null;
 
-    const STORAGE_KEY = 'lotto600_state_v1';
+    const STORAGE_KEY = 'lotto_day_state_v1';
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
