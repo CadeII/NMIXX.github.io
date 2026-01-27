@@ -104,7 +104,12 @@
     .grade-5 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-6 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-7 { background:#B6D7A8; border-color:#B6D7A8; }
-
+    
+    .draw-quick-buttons button.active {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+    }
     .result-box {
       min-height: 60px;
       display: flex;
@@ -154,6 +159,7 @@
     .popup-message {
       font-size: 15px;
       margin-bottom: 20px;
+      white-space: pre-line;
     }
     .popup button {
       padding: 8px 20px;
@@ -218,42 +224,43 @@
       font-weight: 600;
       margin-bottom: 10px;
     }
-    .draw-input {
-      width: 100%;
-      padding: 10px 12px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 14px;
-      box-sizing: border-box;
-      text-align: center;
-    }
     .draw-buttons {
       display: flex;
       justify-content: center;
       gap: 10px;
     }
-    
-    .popup-message {
-      font-size: 15px;
-      margin-bottom: 20px;
-      white-space: pre-line; /* \n을 줄바꿈으로 보여줌 */
+
+    /* 1~10 선택 버튼 */
+    .draw-quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
     }
-    
+    .draw-quick-buttons button {
+      padding: 6px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #f3f3f3;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .draw-quick-buttons button:hover {
+      background: #e0f5f7;
+      border-color: var(--color-primary);
+    }
+
     .remain-hidden-hotspot {
       position: fixed;
       right: 10px;
       bottom: 10px;
       width: 80px;
       height: 40px;
-      /* 완전 투명하지만 클릭 가능 */
       background: transparent;
       cursor: pointer;
       z-index: 950;
     }
 
-
-    
     /* 작업 확인 팝업 */
     .action-confirm-popup {
       background:#fff;
@@ -384,14 +391,18 @@
     <div class="tickets" id="ticketsContainer"></div>
 
     <div class="result-box" id="resultBox">복권을 선택해 보세요.</div>
-  
+
     <div class="tool-buttons">
-  <button class="btn" id="resetBtn">전체 다시 섞기</button>
-  <button class="btn" id="exportBtn">기록 파일로 저장</button>
-  <button class="btn" id="importBtn">기록 파일 불러오기</button>
-  <input type="file" id="importInput" style="display:none" accept="application/json">
-</div>
+      <button class="btn" id="resetBtn">전체 다시 섞기</button>
+      <button class="btn" id="exportBtn">기록 파일로 저장</button>
+      <button class="btn" id="importBtn">기록 파일 불러오기</button>
+      <input type="file" id="importInput" style="display:none" accept="application/json">
+    </div>
+  </div>
+
+  <!-- 우측 하단 히든 버튼 -->
   <div id="remainBtn" class="remain-hidden-hotspot"></div>
+
   <!-- 우측/모바일 아래 기록 패널 -->
   <div class="history-panel">
     <div class="history-header">
@@ -409,31 +420,16 @@
       <div class="popup-title" id="popupTitle"></div>
       <div class="popup-message" id="popupMessage"></div>
 
-      <video
-        id="rank1Video"
-        style="display:none; width:100%; max-height:300px;"
-        preload="auto"
-        playsinline
-      >
+      <video id="rank1Video" style="display:none; width:100%; max-height:300px;" preload="auto" playsinline>
         <source src="1st.mp4" type="video/mp4">
       </video>
-      <video
-        id="rank2Video"
-        style="display:none; width:100%; max-height:300px;"
-        preload="auto"
-        playsinline
-      >
+      <video id="rank2Video" style="display:none; width:100%; max-height:300px;" preload="auto" playsinline>
         <source src="2nd.mp4" type="video/mp4">
       </video>
-      <video
-        id="rank3Video"
-        style="display:none; width:100%; max-height:300px;"
-        preload="auto"
-        playsinline
-      >
+      <video id="rank3Video" style="display:none; width:100%; max-height:300px;" preload="auto" playsinline>
         <source src="3rd.mp4" type="video/mp4">
       </video>
-      
+
       <button onclick="closePopup()">확인</button>
     </div>
   </div>
@@ -453,8 +449,19 @@
   <!-- 횟수 입력 팝업 -->
   <div class="popup-overlay" id="drawOverlay">
     <div class="draw-popup">
-      <div class="draw-title">뽑기 횟수 입력</div>
-      <input type="number" id="drawInput" class="draw-input" min="1" placeholder="예: 5">
+      <div class="draw-title">뽑기 횟수 선택</div>
+      <div class="draw-quick-buttons">
+        <button type="button" data-count="1">1</button>
+        <button type="button" data-count="2">2</button>
+        <button type="button" data-count="3">3</button>
+        <button type="button" data-count="4">4</button>
+        <button type="button" data-count="5">5</button>
+        <button type="button" data-count="6">6</button>
+        <button type="button" data-count="7">7</button>
+        <button type="button" data-count="8">8</button>
+        <button type="button" data-count="9">9</button>
+        <button type="button" data-count="10">10</button>
+      </div>
       <div class="draw-buttons">
         <button class="btn" id="drawCancelBtn">취소</button>
         <button class="btn" id="drawOkBtn">확인</button>
@@ -494,31 +501,32 @@
   </div>
 
   <script>
-    const TOTAL_TICKETS = 700;
+    const TOTAL_TICKETS = 500;
     const PAGE_SIZE = 50;
 
     const gradeCounts = {
-      1: 4,
-      2: 9,
-      3: 24,
-      4: 36,
-      5: 227,
-      6: 320
+      1: 3,
+      2: 6,
+      3: 15,
+      4: 25,
+      5: 150,
+      6: 220
     };
     const EXTRA_RETRY = 80;
-    const PASSWORD = '2022'; // 비밀번호
+    const PASSWORD = '2022';
 
     let tickets = [];
     let currentPage = 1;
     let pendingIndex = null;
     let remainingDraws = 0;
 
-    let pendingAction = null; // 'reset' | 'export' | 'import'
+    let pendingAction = null; // 'reset' | 'export' | 'import' | 'remain'
 
     let drawHistory = [];
     let historyLimit = 0;
+    let selectedDrawCount = null;
 
-    const STORAGE_KEY = 'lotto_day_state_v1';
+    const STORAGE_KEY = 'lotto_night_state_v1';
 
     function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
@@ -527,11 +535,11 @@
       }
       return array;
     }
-    
+
     function initTickets() {
       tickets = [];
       const gradeList = [];
-    
+
       Object.keys(gradeCounts).forEach(g => {
         const count = gradeCounts[g];
         for (let i = 0; i < count; i++) {
@@ -541,9 +549,9 @@
       for (let i = 0; i < EXTRA_RETRY; i++) {
         gradeList.push(7);
       }
-    
+
       shuffle(gradeList);
-    
+
       for (let i = 0; i < TOTAL_TICKETS; i++) {
         tickets.push({
           index: i,
@@ -554,22 +562,21 @@
     }
 
     function showRemainPopup() {
-      // 각 등급별 사용 개수 계산
       const used = {1:0,2:0,3:0,4:0,5:0,6:0,7:0};
       tickets.forEach(t => {
         if (t.used) used[t.grade] = (used[t.grade] || 0) + 1;
       });
-    
+
       const remain1 = (gradeCounts[1] || 0) - used[1];
       const remain2 = (gradeCounts[2] || 0) - used[2];
       const remain3 = (gradeCounts[3] || 0) - used[3];
       const remain4 = (gradeCounts[4] || 0) - used[4];
       const remain5 = (gradeCounts[5] || 0) - used[5];
       const remain6 = (gradeCounts[6] || 0) - used[6];
-    
+
       const total7 = EXTRA_RETRY;
       const remain7 = total7 - used[7];
-    
+
       const lines = [
         '1등 ' + remain1 + '/' + gradeCounts[1],
         '2등 ' + remain2 + '/' + gradeCounts[2],
@@ -579,15 +586,14 @@
         '6등 ' + remain6 + '/' + gradeCounts[6],
         '한 번 더 ' + remain7 + '/' + total7
       ];
-    
+
       const popup = document.getElementById('popupOverlay');
       const title = document.getElementById('popupTitle');
       const msg = document.getElementById('popupMessage');
-    
+
       title.textContent = '잔여 수량';
       msg.textContent = lines.join('\n');
-      
-      // 영상은 필요 없으니 전부 숨기기
+
       ['rank1Video','rank2Video','rank3Video'].forEach(id => {
         const v = document.getElementById(id);
         if (!v) return;
@@ -595,10 +601,9 @@
         v.currentTime = 0;
         v.style.display = 'none';
       });
-    
+
       popup.style.display = 'flex';
     }
-
 
     function renderPage() {
       const container = document.getElementById('ticketsContainer');
@@ -682,7 +687,7 @@
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'lotto_day_state.json';
+      a.download = 'lotto_night_state.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -735,20 +740,20 @@
 
     // 횟수 입력 팝업
     function openDrawPopup() {
-      const overlay = document.getElementById('drawOverlay');
-      const input = document.getElementById('drawInput');
-      input.value = remainingDraws > 0 ? String(remainingDraws) : '';
-      overlay.style.display = 'flex';
-      input.focus();
+      selectedDrawCount = null;
+      // 버튼 active 초기화
+      document.querySelectorAll('.draw-quick-buttons button').forEach(b => {
+        b.classList.remove('active');
+      });
+      document.getElementById('drawOverlay').style.display = 'flex';
     }
 
     function closeDrawPopup() {
       document.getElementById('drawOverlay').style.display = 'none';
     }
 
-    function applyDrawCount() {
-      const input = document.getElementById('drawInput');
-      const n = parseInt(input.value, 10);
+    function applyDrawCount(n) {
+      n = parseInt(n, 10);
       if (!isNaN(n) && n > 0) {
         remainingDraws = n;
       } else {
@@ -807,15 +812,14 @@
       const gradeLabel = gradeText(grade);
       const resultBox = document.getElementById('resultBox');
 
-      // 기록 추가
       if (historyLimit > 0 && grade !== 7) {
-        drawHistory.push(gradeLabel);   // 뒤에 붙이기
+        drawHistory.push(gradeLabel);
         if (drawHistory.length > historyLimit) {
           drawHistory.length = historyLimit;
         }
         renderHistory();
       }
-      
+
       if (grade !== 7) {
         if (remainingDraws > 0) {
           remainingDraws -= 1;
@@ -926,7 +930,7 @@
       }
       document.getElementById('actionConfirmOverlay').style.display = 'flex';
     }
-    
+
     function closeActionConfirm() {
       document.getElementById('actionConfirmOverlay').style.display = 'none';
     }
@@ -948,7 +952,7 @@
     function executeAction() {
       const action = pendingAction;
       pendingAction = null;
-    
+
       if (action === 'reset') {
         localStorage.removeItem(STORAGE_KEY);
         resetGame();
@@ -977,7 +981,7 @@
       closePasswordPopup();
       executeAction();
     }
-//-------------------------------------------------------------
+
     document.addEventListener('DOMContentLoaded', () => {
       const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
 
@@ -1006,7 +1010,7 @@
         openActionConfirm('import');
       });
 
-       document.getElementById('remainBtn').addEventListener('click', () => {
+      document.getElementById('remainBtn').addEventListener('click', () => {
         openActionConfirm('remain');
       });
 
@@ -1055,12 +1059,34 @@
 
       // 횟수 입력 버튼
       document.getElementById('setDrawBtn').addEventListener('click', openDrawPopup);
-      document.getElementById('drawCancelBtn').addEventListener('click', closeDrawPopup);
-      document.getElementById('drawOkBtn').addEventListener('click', applyDrawCount);
+      document.getElementById('drawCancelBtn').addEventListener('click', () => {
+        selectedDrawCount = null;
+        closeDrawPopup();
+      });
+      document.getElementById('drawOkBtn').addEventListener('click', () => {
+        if (selectedDrawCount == null) return;
+        applyDrawCount(selectedDrawCount);
+      });
       document.getElementById('drawOverlay').addEventListener('click', (e) => {
         if (e.target.id === 'drawOverlay') {
+          selectedDrawCount = null;
           closeDrawPopup();
         }
+      });
+
+      // 1~10 버튼: 값 선택 + 색 표시
+      document.querySelectorAll('.draw-quick-buttons button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const value = parseInt(btn.getAttribute('data-count'), 10);
+          selectedDrawCount = value;
+      
+          // 모든 버튼에서 active 제거
+          document.querySelectorAll('.draw-quick-buttons button').forEach(b => {
+            b.classList.remove('active');
+          });
+          // 현재 누른 버튼만 active
+          btn.classList.add('active');
+        });
       });
 
       // 스와이프 페이지 전환
@@ -1125,7 +1151,7 @@
 
         if (isDrawOpen && (e.key === 'Enter' || e.key === ' ')) {
           e.preventDefault();
-          applyDrawCount();
+          if (selectedDrawCount != null) applyDrawCount(selectedDrawCount);
         }
 
         if (isActionOpen) {
@@ -1158,6 +1184,5 @@
       }
     });
   </script>
-
 </body>
 </html>
