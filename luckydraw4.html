@@ -473,9 +473,10 @@
   <!-- 횟수 입력 팝업 -->
   <div class="popup-overlay" id="drawOverlay">
     <div class="draw-popup">
+      <!--
       <div class="draw-title">뽑기 횟수 입력</div>
       <input type="number" id="drawInput" class="draw-input" min="1" placeholder="예: 5">
-
+      -->
         <!-- ✅ 1~10 버튼 -->
       <div class="draw-quick-buttons">
         <button type="button" data-count="1">1</button>
@@ -781,26 +782,25 @@
       document.getElementById('drawOverlay').style.display = 'none';
     }
 
-    function applyDrawCount() {
-      const input = document.getElementById('drawInput');
-      const n = parseInt(input.value, 10);
+    function applyDrawCount(n) {
+      n = parseInt(n, 10);
       if (!isNaN(n) && n > 0) {
         remainingDraws = n;
       } else {
         remainingDraws = 0;
       }
-
+    
       historyLimit = remainingDraws;
       drawHistory = [];
       renderHistory();
-
+    
       const resultBox = document.getElementById('resultBox');
       if (remainingDraws > 0) {
         resultBox.textContent = '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
       } else {
         resultBox.textContent = '남은 뽑기 횟수가 없습니다.';
       }
-
+    
       closeDrawPopup();
       saveState();
     }
