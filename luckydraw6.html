@@ -105,11 +105,7 @@
     .grade-6 { background:#B6D7A8; border-color:#B6D7A8; }
     .grade-7 { background:#B6D7A8; border-color:#B6D7A8; }
     
-    .draw-quick-buttons button.active {
-      background: var(--color-primary);
-      color: #fff;
-      border-color: var(--color-primary);
-    }
+    
     .result-box {
       min-height: 60px;
       display: flex;
@@ -212,12 +208,12 @@
 
     .draw-popup {
       background: #fff;
-      border-radius: 14px;
-      padding: 32px 24px 24px;
-      max-width: 420px;
+      border-radius: 16px;
+      padding: 36px 28px 28px;
+      max-width: 560px;              /* 팝업 폭 키움 */
       width: calc(100% - 40px);
       text-align: center;
-      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
     }
     .draw-title {
       font-size: 22px;
@@ -233,23 +229,38 @@
     /* 1~10 선택 버튼 */
     .draw-quick-buttons {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-      margin-bottom: 10px;
+      grid-template-columns: repeat(5, 1fr);  /* 5개씩 두 줄 */
+      gap: 10px;                              /* 버튼 간 간격 넓게 */
+      margin-bottom: 16px;
     }
+    
     .draw-quick-buttons button {
-      padding: 6px 0;
-      border-radius: 6px;
+      width: 64px;          /* 정사각형 */
+      height: 64px;
+      margin: 0 auto;       /* 각 칸 가운데 정렬 */
+      border-radius: 10px;
       border: 1px solid #ccc;
       background: #f3f3f3;
-      font-size: 13px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+    
     .draw-quick-buttons button:hover {
       background: #e0f5f7;
       border-color: var(--color-primary);
     }
-
+    
+    .draw-quick-buttons button.active {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px rgba(50,184,198,0.25);
+    }
+    
     .remain-hidden-hotspot {
       position: fixed;
       right: 10px;
