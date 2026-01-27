@@ -743,14 +743,14 @@
       const resultBox = document.getElementById('resultBox');
 
       // 기록 추가
-      if (historyLimit > 0) {
-        drawHistory.unshift(gradeLabel);
+      if (historyLimit > 0 && grade !== 7) {
+        drawHistory.push(gradeLabel);   // 뒤에 붙이기
         if (drawHistory.length > historyLimit) {
           drawHistory.length = historyLimit;
         }
         renderHistory();
       }
-
+      
       if (grade !== 7) {
         if (remainingDraws > 0) {
           remainingDraws -= 1;
