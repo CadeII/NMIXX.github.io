@@ -233,7 +233,27 @@
       justify-content: center;
       gap: 10px;
     }
+    
+    .popup-message {
+      font-size: 15px;
+      margin-bottom: 20px;
+      white-space: pre-line; /* \n을 줄바꿈으로 보여줌 */
+    }
+    
+    .remain-hidden-hotspot {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      width: 80px;
+      height: 40px;
+      /* 완전 투명하지만 클릭 가능 */
+      background: transparent;
+      cursor: pointer;
+      z-index: 950;
+    }
 
+
+    
     /* 작업 확인 팝업 */
     .action-confirm-popup {
       background:#fff;
@@ -369,10 +389,9 @@
   <button class="btn" id="resetBtn">전체 다시 섞기</button>
   <button class="btn" id="exportBtn">기록 파일로 저장</button>
   <button class="btn" id="importBtn">기록 파일 불러오기</button>
-  <button class="btn" id="remainBtn">잔여 수량 보기</button>
   <input type="file" id="importInput" style="display:none" accept="application/json">
 </div>
-  
+  <div id="remainBtn" class="remain-hidden-hotspot"></div>
   <!-- 우측/모바일 아래 기록 패널 -->
   <div class="history-panel">
     <div class="history-header">
@@ -567,7 +586,7 @@
     
       title.textContent = '잔여 수량';
       msg.textContent = lines.join('\n');
-    
+      
       // 영상은 필요 없으니 전부 숨기기
       ['rank1Video','rank2Video','rank3Video'].forEach(id => {
         const v = document.getElementById(id);
