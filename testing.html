@@ -376,8 +376,20 @@
     }
 
     @media (max-width: 600px) {
+      body { padding: 12px; }
       .container { padding: 18px 16px 24px; }
-      .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
+
+      /* 모바일에서도 50개(10×5)가 고정으로 보이도록 */
+      .tickets {
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+        gap: 4px;
+      }
+      .ticket {
+        height: 44px;
+        padding: 0;
+        border-radius: 6px;
+      }
+
       .history-panel {
         position: static;
         width: 100%;
@@ -386,7 +398,7 @@
       }
     }
 
-    @media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
       .ticket { transition: none; }
     }
   </style>
