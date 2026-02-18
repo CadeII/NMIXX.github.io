@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Lucky Draw</title>
   <style>
     :root {
@@ -20,6 +20,16 @@
       padding: 20px;
       background: var(--bg);
       color: var(--color-text);
+    }
+
+    /* ====== 태블릿/모바일에서 화면 밀림 최소화 ====== */
+    html, body {
+      overscroll-behavior: none; /* 스크롤 체인/바운스 최소화 */
+    }
+
+    /* 보드(티켓 영역)에서는 기본 pan/zoom 제스처를 막고, 스와이프는 JS로 처리 */
+    #ticketsContainer {
+      touch-action: none;
     }
 
     /* ✅ 레이아웃: 본판(왼쪽) + 기록(오른쪽), 겹치지 않게 */
@@ -610,6 +620,31 @@
   </div>
 
   <script>
+    // ====== 태블릿/모바일 제스처(확대/축소/더블탭 줌) 방지 ======
+    // 주의: 브라우저/OS 정책에 따라 100% 차단이 안 될 수 있습니다.
+    (function preventZoomGestures() {
+      // iOS Safari 계열: pinch-zoom 제스처 이벤트 차단(비표준이지만 실사용됨)
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(type => {
+        document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+      });
+
+      // 멀티터치(핀치) 이동 차단
+      document.addEventListener('touchmove', (e) => {
+        // e.scale은 iOS Safari에서 핀치 시 1이 아닌 값으로 들어오는 경우가 있음
+        if ((e.touches && e.touches.length > 1) || (typeof e.scale === 'number' && e.scale !== 1)) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      // 더블탭 줌 차단(두 번째 탭을 막음)
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) e.preventDefault();
+        lastTouchEnd = now;
+      }, { passive: false });
+    })();
+
     // ====== 설정 ======
     const TOTAL_TICKETS = 700;
     const PAGE_SIZE = 50;
@@ -1288,6 +1323,12 @@
       let touchStartX = null;
       let touchStartY = null;
       const SWIPE_THRESHOLD = 50;
+
+      // 보드(티켓 영역)에서 스와이프할 때 페이지가 밀리지 않도록 기본 스크롤을 차단
+      // (탭은 touchmove가 발생하지 않아 정상 동작)
+      els.ticketsContainer.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+      }, { passive: false });
 
       els.ticketsContainer.addEventListener('touchstart', (e) => {
         const t = e.touches[0];
