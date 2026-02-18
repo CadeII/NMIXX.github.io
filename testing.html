@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lucky Draw</title>
+  <style>
+    :root {
+      --color-primary: #32B8C6;
+      --color-text: #134252;
+      --color-used: #B6D7A8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+      color: var(--color-text);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px 24px 32px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .desc {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    .page-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .page-buttons {
+      display: flex;
+      gap: 8px;
+      touch-action: manipulation;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--color-primary);
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .btn:focus-visible,
+    .ticket:focus-visible,
+    .draw-quick-buttons button:focus-visible {
+      outline: 3px solid rgba(50, 184, 198, 0.6);
+      outline-offset: 2px;
+    }
+
+    .tickets {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .ticket {
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid #d2d2d2;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      background: #fafafa;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+      user-select: none;
+      width: 100%;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+    .ticket:hover:not(.used) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .ticket.used,
+    .ticket:disabled {
+      cursor: default;
+      opacity: 0.6;
+      background: var(--color-used);
+      border-color: var(--color-used);
+    }
+
+    .result-box {
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1px dashed #ccc;
+      font-size: 15px;
+      margin-bottom: 12px;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .tool-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    /* 공통 오버레이 */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .popup {
+      background: #fff;
+      border-radius: 18px;
+      padding: 32px 28px 24px;
+      max-width: 560px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+    }
+    .popup-title {
+      font-size: 60px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    .popup-message {
+      font-size: 15px;
+      margin-bottom: 20px;
+      white-space: pre-line;
+    }
+    .popup button {
+      padding: 8px 20px;
+      border-radius: 999px;
+      border: none;
+      background: var(--color-primary);
+      color:#fff;
+      font-size:14px;
+      cursor:pointer;
+    }
+
+    .confirm-popup {
+      background: #fff;
+      border-radius: 14px;
+      padding: 40px 24px 30px;
+      max-width: 620px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.3);
+    }
+    .confirm-title {
+      font-size: 30px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .confirm-message {
+      font-size: 25px;
+      margin-bottom: 18px;
+    }
+    .confirm-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .confirm-btn {
+      padding: 20px 40px;
+      border-radius: 999px;
+      border: none;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .confirm-yes {
+      background: var(--color-primary);
+      color: #fff;
+    }
+    .confirm-no {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .draw-popup {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 28px 28px;
+      max-width: 560px;
+      width: calc(100% - 40px);
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+    }
+    .draw-title {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .draw-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    /* 1~10 선택 버튼 */
+    .draw-quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .draw-quick-buttons button {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #f3f3f3;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .draw-quick-buttons button:hover {
+      background: #e0f5f7;
+      border-color: var(--color-primary);
+    }
+    .draw-quick-buttons button.active {
+      background: var(--color-primary);
+      color: #fff;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px rgba(50,184,198,0.25);
+    }
+
+    .remain-hidden-hotspot {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      width: 80px;
+      height: 40px;
+      background: transparent;
+      cursor: pointer;
+      z-index: 950;
+    }
+
+    /* 작업 확인 팝업 */
+    .action-confirm-popup {
+      background:#fff;
+      border-radius:14px;
+      padding:32px 24px 24px;
+      max-width:420px;
+      width:calc(100% - 40px);
+      text-align:center;
+      box-shadow:0 14px 35px rgba(0,0,0,0.3);
+    }
+    .action-confirm-title {
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:8px;
+    }
+    .action-confirm-message {
+      font-size:15px;
+      margin-bottom:18px;
+    }
+    .action-confirm-buttons {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+    }
+
+    /* 비밀번호 팝업 */
+    .password-popup {
+      background:#fff;
+      border-radius:14px;
+      padding:32px 24px 24px;
+      max-width:420px;
+      width:calc(100% - 40px);
+      text-align:center;
+      box-shadow:0 14px 35px rgba(0,0,0,0.3);
+    }
+    .password-title {
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:8px;
+    }
+    .password-input {
+      width:100%;
+      padding:10px 12px;
+      font-size:16px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      margin-bottom:10px;
+      box-sizing:border-box;
+      text-align:center;
+      font-family: monospace;
+      letter-spacing: 4px;
+    }
+    .password-hint {
+      font-size:12px;
+      color:#d00;
+      margin-bottom:14px;
+      min-height:16px;
+    }
+    .password-buttons {
+      display:flex;
+      justify-content:center;
+      gap:10px;
+    }
+
+    /* 우측 기록 패널 */
+    .history-panel {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      width: 200px;
+      max-height: 60vh;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      padding: 10px 12px;
+      font-size: 13px;
+      z-index: 900;
+      display: flex;
+      flex-direction: column;
+    }
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .history-list {
+      overflow-y: auto;
+      border-top: 1px solid #eee;
+      padding-top: 6px;
+    }
+    .history-item {
+      padding: 2px 0;
+    }
+    .history-empty {
+      color: #999;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 18px 16px 24px; }
+      .tickets { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); }
+      .history-panel {
+        position: static;
+        width: 100%;
+        max-height: none;
+        margin-top: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ticket { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Lucky Draw</h1>
+    <p class="desc">
+      한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.
+    </p>
+
+    <div class="page-info">
+      <div class="page-buttons">
+        <button class="btn" id="prevBtn" type="button">이전</button>
+        <button class="btn" id="nextBtn" type="button">다음</button>
+      </div>
+      <button class="btn" id="setDrawBtn" type="button">횟수 입력</button>
+    </div>
+
+    <div class="tickets" id="ticketsContainer"></div>
+
+    <div class="result-box" id="resultBox" aria-live="polite">복권을 선택해 보세요.</div>
+
+    <div class="tool-buttons">
+      <button class="btn" id="resetBtn" type="button">전체 다시 섞기</button>
+      <button class="btn" id="exportBtn" type="button">기록 파일로 저장</button>
+      <button class="btn" id="importBtn" type="button">기록 파일 불러오기</button>
+      <input type="file" id="importInput" style="display:none" accept="application/json">
+    </div>
+  </div>
+
+  <!-- 우측 하단 히든 버튼 -->
+  <div id="remainBtn" class="remain-hidden-hotspot" aria-label="잔여 수량 보기" role="button" tabindex="0"></div>
+
+  <!-- 우측/모바일 아래 기록 패널 -->
+  <div class="history-panel">
+    <div class="history-header">
+      <span>뽑은 기록</span>
+      <span id="historyCount">0/0</span>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="history-empty">아직 기록이 없습니다.</div>
+    </div>
+  </div>
+
+  <!-- 결과 팝업 -->
+  <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupMessage">
+    <div class="popup">
+      <div class="popup-title" id="popupTitle"></div>
+      <div class="popup-message" id="popupMessage"></div>
+
+      <video id="rank1Video" style="display:none; width:100%; max-height:300px;" preload="auto" playsinline>
+        <source src="1st.mp4" type="video/mp4">
+      </video>
+      <video id="rank2Video" style="display:none; width:100%; max-height:300px;" preload="auto" playsinline>
+        <source src="2nd.mp4" type="video/mp4">
+      </video>
+      <video id="rank3Video" style="display:none; width:100%; max-height:300px;" preload="auto" playsinline>
+        <source src="3rd.mp4" type="video/mp4">
+      </video>
+
+      <button id="popupOkBtn" type="button">확인</button>
+    </div>
+  </div>
+
+  <!-- 번호 선택 확인 팝업 -->
+  <div class="popup-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+    <div class="confirm-popup">
+      <div class="confirm-title" id="confirmTitle">번호 선택</div>
+      <div class="confirm-message" id="confirmMessage"></div>
+      <div class="confirm-buttons">
+        <button class="confirm-btn confirm-no" id="confirmNoBtn" type="button">아니오</button>
+        <button class="confirm-btn confirm-yes" id="confirmYesBtn" type="button">예</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 횟수 입력 팝업 -->
+  <div class="popup-overlay" id="drawOverlay" role="dialog" aria-modal="true" aria-labelledby="drawTitle">
+    <div class="draw-popup">
+      <div class="draw-title" id="drawTitle">뽑기 횟수 선택</div>
+      <div class="draw-quick-buttons" id="drawQuickButtons">
+        <button type="button" data-count="1">1</button>
+        <button type="button" data-count="2">2</button>
+        <button type="button" data-count="3">3</button>
+        <button type="button" data-count="4">4</button>
+        <button type="button" data-count="5">5</button>
+        <button type="button" data-count="6">6</button>
+        <button type="button" data-count="7">7</button>
+        <button type="button" data-count="8">8</button>
+        <button type="button" data-count="9">9</button>
+        <button type="button" data-count="10">10</button>
+      </div>
+      <div class="draw-buttons">
+        <button class="btn" id="drawCancelBtn" type="button">취소</button>
+        <button class="btn" id="drawOkBtn" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 작업 확인 팝업 -->
+  <div class="popup-overlay" id="actionConfirmOverlay" role="dialog" aria-modal="true" aria-labelledby="actionConfirmTitle" aria-describedby="actionConfirmMessage">
+    <div class="action-confirm-popup">
+      <div class="action-confirm-title" id="actionConfirmTitle">작업 확인</div>
+      <div class="action-confirm-message" id="actionConfirmMessage"></div>
+      <div class="action-confirm-buttons">
+        <button class="btn" id="actionCancelBtn" type="button">아니오</button>
+        <button class="btn" id="actionOkBtn" type="button">예</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비밀번호 입력 팝업 -->
+  <div class="popup-overlay" id="passwordOverlay" role="dialog" aria-modal="true" aria-labelledby="passwordTitle" aria-describedby="passwordHint">
+    <div class="password-popup">
+      <div class="password-title" id="passwordTitle">비밀번호 입력</div>
+      <input
+        type="password"
+        id="passwordInput"
+        class="password-input"
+        placeholder="PASSWORD"
+        autocomplete="off"
+        inputmode="numeric"
+      >
+      <div class="password-hint" id="passwordHint"></div>
+      <div class="password-buttons">
+        <button class="btn" id="passwordCancelBtn" type="button">취소</button>
+        <button class="btn" id="passwordOkBtn" type="button">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ====== 설정 ======
+    const TOTAL_TICKETS = 700;
+    const PAGE_SIZE = 50;
+
+    const gradeCounts = {
+      1: 4,
+      2: 9,
+      3: 24,
+      4: 36,
+      5: 227,
+      6: 320
+    };
+    const EXTRA_RETRY = 80;
+
+    // (주의) 실수방지용. 보안 목적이 아님.
+    const PASSWORD = '0619';
+
+    const STORAGE_KEY = 'lotto_day_state_v1';
+
+    // ====== 상태 ======
+    let tickets = [];
+    let currentPage = 1;
+    let pendingIndex = null;
+    let remainingDraws = 0;
+
+    let pendingAction = null; // 'reset' | 'export' | 'import' | 'remain'
+    let selectedDrawCount = null;
+
+    let drawHistory = [];
+    let historyLimit = 0;
+
+    // ====== DOM 캐시 ======
+    const $ = (id) => document.getElementById(id);
+
+    const els = {
+      prevBtn: $('prevBtn'),
+      nextBtn: $('nextBtn'),
+      setDrawBtn: $('setDrawBtn'),
+      ticketsContainer: $('ticketsContainer'),
+      resultBox: $('resultBox'),
+
+      resetBtn: $('resetBtn'),
+      exportBtn: $('exportBtn'),
+      importBtn: $('importBtn'),
+      importInput: $('importInput'),
+
+      remainBtn: $('remainBtn'),
+
+      historyList: $('historyList'),
+      historyCount: $('historyCount'),
+
+      popupOverlay: $('popupOverlay'),
+      popupTitle: $('popupTitle'),
+      popupMessage: $('popupMessage'),
+      popupOkBtn: $('popupOkBtn'),
+      rank1Video: $('rank1Video'),
+      rank2Video: $('rank2Video'),
+      rank3Video: $('rank3Video'),
+
+      confirmOverlay: $('confirmOverlay'),
+      confirmMessage: $('confirmMessage'),
+      confirmNoBtn: $('confirmNoBtn'),
+      confirmYesBtn: $('confirmYesBtn'),
+
+      drawOverlay: $('drawOverlay'),
+      drawQuickButtons: $('drawQuickButtons'),
+      drawCancelBtn: $('drawCancelBtn'),
+      drawOkBtn: $('drawOkBtn'),
+
+      actionConfirmOverlay: $('actionConfirmOverlay'),
+      actionConfirmMessage: $('actionConfirmMessage'),
+      actionCancelBtn: $('actionCancelBtn'),
+      actionOkBtn: $('actionOkBtn'),
+
+      passwordOverlay: $('passwordOverlay'),
+      passwordInput: $('passwordInput'),
+      passwordHint: $('passwordHint'),
+      passwordCancelBtn: $('passwordCancelBtn'),
+      passwordOkBtn: $('passwordOkBtn')
+    };
+
+    const maxPage = Math.ceil(TOTAL_TICKETS / PAGE_SIZE);
+
+    // ====== 유틸 ======
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function gradeText(grade) {
+      switch (grade) {
+        case 1: return '1등';
+        case 2: return '2등';
+        case 3: return '3등';
+        case 4: return '4등';
+        case 5: return '5등';
+        case 6: return '6등';
+        case 7: return '한 번 더!';
+        default: return '';
+      }
+    }
+
+    function isOpen(overlayEl) {
+      return overlayEl && overlayEl.style.display === 'flex';
+    }
+
+    function openOverlay(overlayEl) {
+      if (overlayEl) overlayEl.style.display = 'flex';
+    }
+
+    function closeOverlay(overlayEl) {
+      if (overlayEl) overlayEl.style.display = 'none';
+    }
+
+    function stopAllVideos() {
+      [els.rank1Video, els.rank2Video, els.rank3Video].forEach(v => {
+        if (!v) return;
+        if (!v.paused) v.pause();
+        v.currentTime = 0;
+        v.style.display = 'none';
+      });
+    }
+
+    function setIdleMessage() {
+      if (remainingDraws > 0) {
+        els.resultBox.textContent = '복권을 선택해 보세요. (남은 횟수: ' + remainingDraws + '회)';
+      } else {
+        els.resultBox.textContent = '남은 뽑기 횟수가 없습니다. "횟수 입력" 버튼을 눌러 설정하세요.';
+      }
+    }
+
+    // ====== 티켓 초기화 ======
+    function initTickets() {
+      tickets = [];
+
+      const gradeList = [];
+      Object.keys(gradeCounts).forEach(g => {
+        const count = gradeCounts[g];
+        for (let i = 0; i < count; i++) gradeList.push(parseInt(g, 10));
+      });
+      for (let i = 0; i < EXTRA_RETRY; i++) gradeList.push(7);
+
+      shuffle(gradeList);
+
+      for (let i = 0; i < TOTAL_TICKETS; i++) {
+        tickets.push({
+          index: i,
+          grade: gradeList[i] || 6,
+          used: false
+        });
+      }
+    }
+
+    // ====== 저장/불러오기 ======
+    function saveState() {
+      const state = {
+        version: 1,
+        tickets,
+        currentPage,
+        remainingDraws,
+        historyLimit,
+        drawHistory
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return false;
+
+      try {
+        const state = JSON.parse(saved);
+        if (!state.tickets || !Array.isArray(state.tickets)) return false;
+
+        tickets = state.tickets;
+        currentPage = state.currentPage || 1;
+        remainingDraws = typeof state.remainingDraws === 'number' ? state.remainingDraws : 0;
+        historyLimit = typeof state.historyLimit === 'number' ? state.historyLimit : 0;
+        drawHistory = Array.isArray(state.drawHistory) ? state.drawHistory : [];
+
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function downloadStateFile() {
+      const state = {
+        version: 1,
+        tickets,
+        currentPage,
+        remainingDraws,
+        historyLimit,
+        drawHistory,
+        savedAt: new Date().toISOString()
+      };
+
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'lotto_day_state.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      alert('기록을 파일로 저장했습니다.');
+    }
+
+    function importStateFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data.tickets || !Array.isArray(data.tickets)) {
+            alert('잘못된 기록 파일입니다.');
+            return;
+          }
+
+          tickets = data.tickets;
+          currentPage = data.currentPage || 1;
+          remainingDraws = typeof data.remainingDraws === 'number' ? data.remainingDraws : 0;
+
+          historyLimit = typeof data.historyLimit === 'number'
+            ? data.historyLimit
+            : (typeof data.remainingDraws === 'number' ? data.remainingDraws : 0);
+
+          drawHistory = Array.isArray(data.drawHistory) ? data.drawHistory : [];
+
+          renderPage();
+          renderHistory();
+          setIdleMessage();
+          saveState();
+
+          alert('기록을 불러왔습니다.');
+        } catch (err) {
+          alert('기록 파일을 읽는 중 오류가 발생했습니다.');
+        } finally {
+          els.importInput.value = '';
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    // ====== 렌더링 ======
+    function renderPage() {
+      els.ticketsContainer.innerHTML = '';
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = Math.min(start + PAGE_SIZE, TOTAL_TICKETS);
+
+      const frag = document.createDocumentFragment();
+
+      for (let i = start; i < end; i++) {
+        const t = tickets[i];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'ticket' + (t.used ? ' used' : '');
+        btn.textContent = '';
+        btn.disabled = !!t.used;
+
+        if (!t.used) {
+          btn.addEventListener('click', () => handleTicketClick(i));
+        }
+
+        frag.appendChild(btn);
+      }
+
+      els.ticketsContainer.appendChild(frag);
+
+      // (기존 동작 유지) 이전/다음은 항상 사용 가능(끝에서 순환)
+      els.prevBtn.disabled = false;
+      els.nextBtn.disabled = false;
+    }
+
+    function renderHistory() {
+      if (!els.historyList || !els.historyCount) return;
+
+      if (!drawHistory.length) {
+        els.historyList.innerHTML = '<div class="history-empty">아직 기록이 없습니다.</div>';
+        els.historyCount.textContent = '0/' + historyLimit;
+        return;
+      }
+
+      els.historyList.innerHTML = drawHistory
+        .map((g, idx) => '<div class="history-item">' + (idx + 1) + '회차: ' + g + '</div>')
+        .join('');
+
+      els.historyCount.textContent = drawHistory.length + '/' + historyLimit;
+    }
+
+    // ====== 잔여 수량 ======
+    function showRemainPopup() {
+      const used = {1:0,2:0,3:0,4:0,5:0,6:0,7:0};
+      tickets.forEach(t => {
+        if (t.used) used[t.grade] = (used[t.grade] || 0) + 1;
+      });
+
+      const lines = [
+        '1등 ' + ((gradeCounts[1] || 0) - used[1]) + '/' + (gradeCounts[1] || 0),
+        '2등 ' + ((gradeCounts[2] || 0) - used[2]) + '/' + (gradeCounts[2] || 0),
+        '3등 ' + ((gradeCounts[3] || 0) - used[3]) + '/' + (gradeCounts[3] || 0),
+        '4등 ' + ((gradeCounts[4] || 0) - used[4]) + '/' + (gradeCounts[4] || 0),
+        '5등 ' + ((gradeCounts[5] || 0) - used[5]) + '/' + (gradeCounts[5] || 0),
+        '6등 ' + ((gradeCounts[6] || 0) - used[6]) + '/' + (gradeCounts[6] || 0),
+        '한 번 더 ' + (EXTRA_RETRY - used[7]) + '/' + EXTRA_RETRY
+      ];
+
+      stopAllVideos();
+      els.popupTitle.textContent = '잔여 수량';
+      els.popupMessage.textContent = lines.join('\n');
+
+      openOverlay(els.popupOverlay);
+    }
+
+    // ====== 뽑기 횟수 팝업 ======
+    function openDrawPopup() {
+      selectedDrawCount = null;
+
+      els.drawQuickButtons.querySelectorAll('button').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
+
+      openOverlay(els.drawOverlay);
+    }
+
+    function closeDrawPopup() {
+      closeOverlay(els.drawOverlay);
+    }
+
+    function applyDrawCount(n) {
+      n = parseInt(n, 10);
+      remainingDraws = (!isNaN(n) && n > 0) ? n : 0;
+
+      historyLimit = remainingDraws;
+      drawHistory = [];
+      renderHistory();
+
+      setIdleMessage();
+      closeDrawPopup();
+      saveState();
+    }
+
+    // ====== 티켓 선택 ======
+    function handleTicketClick(i) {
+      const t = tickets[i];
+      if (!t || t.used) return;
+
+      if (remainingDraws <= 0) {
+        setIdleMessage();
+        return;
+      }
+
+      pendingIndex = i;
+      els.confirmMessage.textContent = '복권을 선택할까요?';
+      openOverlay(els.confirmOverlay);
+    }
+
+    function cancelSelect() {
+      pendingIndex = null;
+      closeOverlay(els.confirmOverlay);
+    }
+
+    function confirmSelect() {
+      if (pendingIndex === null) return;
+
+      const i = pendingIndex;
+      pendingIndex = null;
+      closeOverlay(els.confirmOverlay);
+
+      const t = tickets[i];
+      if (!t || t.used) return;
+
+      t.used = true;
+
+      const grade = t.grade;
+      const gradeLabel = gradeText(grade);
+
+      // 기록: '한 번 더!'는 제외(기존 동작 유지)
+      if (historyLimit > 0 && grade !== 7) {
+        drawHistory.push(gradeLabel);
+        if (drawHistory.length > historyLimit) drawHistory.length = historyLimit;
+        renderHistory();
+      }
+
+      // 남은 횟수 차감: '한 번 더!'는 제외(기존 동작 유지)
+      if (grade !== 7 && remainingDraws > 0) remainingDraws -= 1;
+
+      els.resultBox.textContent = gradeLabel + ' 당첨! (남은 횟수: ' + remainingDraws + '회)';
+
+      stopAllVideos();
+
+      if (grade === 1 && els.rank1Video) {
+        els.rank1Video.style.display = 'block';
+        els.rank1Video.play().catch(() => {});
+      } else if (grade === 2 && els.rank2Video) {
+        els.rank2Video.style.display = 'block';
+        els.rank2Video.play().catch(() => {});
+      } else if (grade === 3 && els.rank3Video) {
+        els.rank3Video.style.display = 'block';
+        els.rank3Video.play().catch(() => {});
+      }
+
+      showResultPopup(gradeLabel);
+
+      renderPage();
+      saveState();
+    }
+
+    // ====== 결과 팝업 ======
+    function showResultPopup(gradeLabel) {
+      if (gradeLabel === '1등') els.popupTitle.textContent = '1등!';
+      else if (gradeLabel === '2등') els.popupTitle.textContent = '2등!';
+      else if (gradeLabel === '3등') els.popupTitle.textContent = '3등!';
+      else if (gradeLabel === '4등') els.popupTitle.textContent = '4등';
+      else if (gradeLabel === '5등') els.popupTitle.textContent = '5등';
+      else if (gradeLabel === '6등') els.popupTitle.textContent = '6등';
+      else if (gradeLabel === '한 번 더!') els.popupTitle.textContent = '한 번 더!';
+      else els.popupTitle.textContent = '';
+
+      els.popupMessage.textContent = '';
+      openOverlay(els.popupOverlay);
+    }
+
+    function closePopup() {
+      stopAllVideos();
+      closeOverlay(els.popupOverlay);
+    }
+
+    // ====== 초기화 ======
+    function resetGame() {
+      initTickets();
+      currentPage = 1;
+      remainingDraws = 0;
+
+      drawHistory = [];
+      historyLimit = 0;
+      renderHistory();
+
+      renderPage();
+      setIdleMessage();
+      saveState();
+    }
+
+    // ====== 작업 확인 + 비밀번호 ======
+    function openActionConfirm(action) {
+      pendingAction = action;
+
+      if (action === 'reset') {
+        els.actionConfirmMessage.textContent = '정말 전체를 다시 섞을까요? (기록이 모두 초기화됩니다)';
+      } else if (action === 'export') {
+        els.actionConfirmMessage.textContent = '현재 기록을 파일로 저장할까요?';
+      } else if (action === 'import') {
+        els.actionConfirmMessage.textContent = '기록 파일을 불러올까요? (기존 기록이 바뀔 수 있습니다)';
+      } else if (action === 'remain') {
+        els.actionConfirmMessage.textContent = '현재 남은 각 등급별 수량을 볼까요?';
+      } else {
+        els.actionConfirmMessage.textContent = '';
+      }
+
+      openOverlay(els.actionConfirmOverlay);
+    }
+
+    function closeActionConfirm() {
+      closeOverlay(els.actionConfirmOverlay);
+    }
+
+    function openPasswordPopup() {
+      els.passwordInput.value = '';
+      els.passwordHint.textContent = '';
+      openOverlay(els.passwordOverlay);
+      els.passwordInput.focus();
+    }
+
+    function closePasswordPopup() {
+      closeOverlay(els.passwordOverlay);
+    }
+
+    function executeAction() {
+      const action = pendingAction;
+      pendingAction = null;
+
+      if (action === 'reset') {
+        localStorage.removeItem(STORAGE_KEY);
+        resetGame();
+        alert('초기화가 완료되었습니다.');
+      } else if (action === 'export') {
+        downloadStateFile();
+      } else if (action === 'import') {
+        els.importInput.click();
+      } else if (action === 'remain') {
+        showRemainPopup();
+      }
+    }
+
+    function checkPasswordAndRun() {
+      const value = els.passwordInput.value;
+
+      if (value !== PASSWORD) {
+        els.passwordHint.textContent = '비밀번호가 올바르지 않습니다.';
+        els.passwordInput.value = '';
+        els.passwordInput.focus();
+        return;
+      }
+
+      closePasswordPopup();
+      executeAction();
+    }
+
+    // ====== 이벤트 바인딩 ======
+    document.addEventListener('DOMContentLoaded', () => {
+      els.prevBtn.addEventListener('click', () => {
+        currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
+        renderPage();
+        saveState();
+      });
+
+      els.nextBtn.addEventListener('click', () => {
+        currentPage = currentPage < maxPage ? currentPage + 1 : 1;
+        renderPage();
+        saveState();
+      });
+
+      els.resetBtn.addEventListener('click', () => openActionConfirm('reset'));
+      els.exportBtn.addEventListener('click', () => openActionConfirm('export'));
+      els.importBtn.addEventListener('click', () => openActionConfirm('import'));
+
+      // 히든 버튼(잔여 수량)
+      els.remainBtn.addEventListener('click', () => openActionConfirm('remain'));
+      els.remainBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openActionConfirm('remain');
+        }
+      });
+
+      els.importInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) importStateFromFile(file);
+      });
+
+      // 결과 팝업
+      els.popupOkBtn.addEventListener('click', closePopup);
+      els.popupOverlay.addEventListener('click', (e) => {
+        if (e.target === els.popupOverlay) closePopup();
+      });
+
+      // 번호 선택 확인 팝업
+      els.confirmNoBtn.addEventListener('click', cancelSelect);
+      els.confirmYesBtn.addEventListener('click', confirmSelect);
+      els.confirmOverlay.addEventListener('click', (e) => {
+        if (e.target === els.confirmOverlay) cancelSelect();
+      });
+
+      // 횟수 입력 팝업
+      els.setDrawBtn.addEventListener('click', openDrawPopup);
+      els.drawCancelBtn.addEventListener('click', () => {
+        selectedDrawCount = null;
+        closeDrawPopup();
+      });
+      els.drawOkBtn.addEventListener('click', () => {
+        if (selectedDrawCount == null) return;
+        applyDrawCount(selectedDrawCount);
+      });
+      els.drawOverlay.addEventListener('click', (e) => {
+        if (e.target === els.drawOverlay) {
+          selectedDrawCount = null;
+          closeDrawPopup();
+        }
+      });
+
+      // 1~10 선택 버튼 (이벤트 위임)
+      els.drawQuickButtons.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-count]');
+        if (!btn) return;
+
+        const value = parseInt(btn.getAttribute('data-count'), 10);
+        selectedDrawCount = value;
+
+        els.drawQuickButtons.querySelectorAll('button').forEach(b => {
+          const isActive = b === btn;
+          b.classList.toggle('active', isActive);
+          b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+      });
+
+      // 작업 확인 팝업
+      els.actionCancelBtn.addEventListener('click', () => {
+        pendingAction = null;
+        closeActionConfirm();
+      });
+      els.actionOkBtn.addEventListener('click', () => {
+        closeActionConfirm();
+        if (pendingAction) openPasswordPopup();
+      });
+      els.actionConfirmOverlay.addEventListener('click', (e) => {
+        if (e.target === els.actionConfirmOverlay) {
+          pendingAction = null;
+          closeActionConfirm();
+        }
+      });
+
+      // 비밀번호 팝업
+      els.passwordCancelBtn.addEventListener('click', () => {
+        pendingAction = null;
+        closePasswordPopup();
+      });
+      els.passwordOkBtn.addEventListener('click', checkPasswordAndRun);
+      els.passwordOverlay.addEventListener('click', (e) => {
+        if (e.target === els.passwordOverlay) {
+          pendingAction = null;
+          closePasswordPopup();
+        }
+      });
+
+      // 스와이프 페이지 전환
+      let touchStartX = null;
+      let touchStartY = null;
+      const SWIPE_THRESHOLD = 50;
+
+      els.ticketsContainer.addEventListener('touchstart', (e) => {
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+      });
+
+      els.ticketsContainer.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+
+        const t = e.changedTouches[0];
+        const deltaX = t.clientX - touchStartX;
+        const deltaY = t.clientY - touchStartY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > SWIPE_THRESHOLD) {
+          if (deltaX < 0) els.nextBtn.click();
+          else els.prevBtn.click();
+        }
+
+        touchStartX = null;
+        touchStartY = null;
+      });
+
+      // 키보드 단축키 + ESC 닫기
+      document.addEventListener('keydown', (e) => {
+        // ESC: 위에서부터 닫기(우선순위)
+        if (e.key === 'Escape') {
+          if (isOpen(els.passwordOverlay)) { e.preventDefault(); els.passwordCancelBtn.click(); return; }
+          if (isOpen(els.actionConfirmOverlay)) { e.preventDefault(); els.actionCancelBtn.click(); return; }
+          if (isOpen(els.drawOverlay)) { e.preventDefault(); els.drawCancelBtn.click(); return; }
+          if (isOpen(els.confirmOverlay)) { e.preventDefault(); cancelSelect(); return; }
+          if (isOpen(els.popupOverlay)) { e.preventDefault(); closePopup(); return; }
+        }
+
+        const isConfirmOpen = isOpen(els.confirmOverlay);
+        const isResultOpen = isOpen(els.popupOverlay);
+        const isDrawOpen = isOpen(els.drawOverlay);
+        const isActionOpen = isOpen(els.actionConfirmOverlay);
+        const isPasswordOpen = isOpen(els.passwordOverlay);
+
+        if (isConfirmOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            confirmSelect();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            cancelSelect();
+          }
+        }
+
+        if (isResultOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          closePopup();
+        }
+
+        if (isDrawOpen && e.key === 'Enter') {
+          e.preventDefault();
+          if (selectedDrawCount != null) applyDrawCount(selectedDrawCount);
+        }
+
+        if (isActionOpen) {
+          if (e.key === 'y' || e.key === 'Y') {
+            e.preventDefault();
+            els.actionOkBtn.click();
+          } else if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            els.actionCancelBtn.click();
+          }
+        }
+
+        if (isPasswordOpen && e.key === 'Enter') {
+          e.preventDefault();
+          checkPasswordAndRun();
+        }
+      });
+
+      // 시작
+      if (!loadState()) {
+        resetGame();
+      } else {
+        renderPage();
+        renderHistory();
+        setIdleMessage();
+        saveState(); // (선택) 필드 누락된 오래된 상태를 보정
+      }
+    });
+  </script>
+</body>
+</html>
