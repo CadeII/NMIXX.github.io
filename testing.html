@@ -201,6 +201,15 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      /* 팝업이 열린 상태에서: 확대/축소/드래그(스크롤) 제스처를 최대한 차단 */
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+
+    /* overlay 자식 요소에서 시작된 터치도 기본 pan/zoom이 나오지 않도록 */
+    .popup-overlay,
+    .popup-overlay * {
+      touch-action: none;
     }
 
     .popup {
@@ -752,12 +761,53 @@
       return overlayEl && overlayEl.style.display === 'flex';
     }
 
+    // 팝업이 열려 있을 때 배경(페이지)이 드래그로 밀리거나 스크롤되는 것을 방지
+    let scrollLockCount = 0;
+    let scrollLockTop = 0;
+
+    function lockScroll() {
+      scrollLockCount += 1;
+      if (scrollLockCount !== 1) return;
+
+      scrollLockTop = window.scrollY || document.documentElement.scrollTop || 0;
+      // iOS 포함: overflow:hidden만으로는 부족한 경우가 있어 body를 fixed로 잠금
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollLockTop}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+    }
+
+    function unlockScroll() {
+      if (scrollLockCount <= 0) {
+        scrollLockCount = 0;
+        return;
+      }
+      scrollLockCount -= 1;
+      if (scrollLockCount !== 0) return;
+
+      const top = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+
+      const parsed = parseInt(top || '0', 10);
+      const y = Number.isFinite(parsed) ? -parsed : scrollLockTop;
+      window.scrollTo(0, y);
+    }
+
     function openOverlay(overlayEl) {
-      if (overlayEl) overlayEl.style.display = 'flex';
+      if (!overlayEl) return;
+      overlayEl.style.display = 'flex';
+      lockScroll();
     }
 
     function closeOverlay(overlayEl) {
-      if (overlayEl) overlayEl.style.display = 'none';
+      if (!overlayEl) return;
+      overlayEl.style.display = 'none';
+      unlockScroll();
     }
 
     function stopAllVideos() {
@@ -1184,6 +1234,25 @@
 
     // ====== 이벤트 바인딩 ======
     document.addEventListener('DOMContentLoaded', () => {
+      // 팝업(오버레이) 위에서 확대/축소/드래그로 화면이 밀리는 것을 방지
+      // - 스크롤 잠금은 openOverlay/closeOverlay에서 처리
+      // - 여기서는 overlay 자체의 기본 터치 동작(스크롤/패닝)을 추가로 차단
+      document.querySelectorAll('.popup-overlay').forEach(overlay => {
+        // 한 손 드래그로 배경이 움직이는 것 방지
+        overlay.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+        }, { passive: false });
+
+        // 멀티터치(핀치) 시도도 overlay에서 한 번 더 차단
+        overlay.addEventListener('touchstart', (e) => {
+          if (e.touches && e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+
+        // 트랙패드/마우스 휠 스크롤로 배경이 움직이는 것 방지(데스크톱에서도 안전)
+        overlay.addEventListener('wheel', (e) => {
+          e.preventDefault();
+        }, { passive: false });
+      });
       els.prevBtn.addEventListener('click', () => {
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
