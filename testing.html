@@ -9,6 +9,7 @@
       --color-primary: #32B8C6;
       --color-text: #134252;
       --color-used: #B6D7A8;
+      --bg: #f5f5f5;
     }
 
     * { box-sizing: border-box; }
@@ -17,17 +18,28 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
-      background: #f5f5f5;
+      background: var(--bg);
       color: var(--color-text);
     }
 
-    .container {
-      max-width: 900px;
+    /* ✅ 레이아웃: 본판(왼쪽) + 기록(오른쪽), 겹치지 않게 */
+    .layout {
+      max-width: 1200px;
       margin: 0 auto;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .container {
+      flex: 1 1 900px;
+      max-width: 900px;
+      margin: 0;                 /* 기존: auto → 레이아웃 안에서 좌측에 배치 */
       background: #ffffff;
       border-radius: 12px;
       padding: 24px 24px 32px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      min-width: 0;              /* 긴 요소가 생겨도 overflow로 레이아웃 깨짐 방지 */
     }
 
     h1 {
@@ -48,11 +60,13 @@
       align-items: center;
       margin-bottom: 12px;
       font-size: 14px;
+      gap: 10px;
     }
     .page-buttons {
       display: flex;
       gap: 8px;
       touch-action: manipulation;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -71,14 +85,15 @@
 
     .btn:focus-visible,
     .ticket:focus-visible,
-    .draw-quick-buttons button:focus-visible {
+    .draw-quick-buttons button:focus-visible,
+    #remainBtn:focus-visible {
       outline: 3px solid rgba(50, 184, 198, 0.6);
       outline-offset: 2px;
     }
 
     .tickets {
       display: grid;
-      grid-template-columns: repeat(10, 1fr);
+      grid-template-columns: repeat(10, minmax(0, 1fr));
       gap: 8px;
       margin-bottom: 16px;
     }
@@ -132,6 +147,40 @@
       gap: 8px;
       margin-bottom: 4px;
     }
+
+    /* ✅ 기록 패널: 고정/오버레이 제거 → 레이아웃 오른쪽 컬럼 */
+    .history-panel {
+      flex: 0 0 240px;
+      width: 240px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      padding: 10px 12px;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+
+      /* 화면 스크롤 시 따라오게(겹치지 않음) */
+      position: sticky;
+      top: 20px;
+      max-height: calc(100vh - 40px);
+      overflow: hidden;
+    }
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--color-text);
+    }
+    .history-list {
+      overflow-y: auto;
+      border-top: 1px solid #eee;
+      padding-top: 6px;
+    }
+    .history-item { padding: 2px 0; }
+    .history-empty { color: #999; }
 
     /* 공통 오버레이 */
     .popup-overlay {
@@ -203,14 +252,8 @@
       font-size: 13px;
       cursor: pointer;
     }
-    .confirm-yes {
-      background: var(--color-primary);
-      color: #fff;
-    }
-    .confirm-no {
-      background: #e0e0e0;
-      color: #333;
-    }
+    .confirm-yes { background: var(--color-primary); color: #fff; }
+    .confirm-no  { background: #e0e0e0; color: #333; }
 
     .draw-popup {
       background: #fff;
@@ -232,7 +275,6 @@
       gap: 10px;
     }
 
-    /* 1~10 선택 버튼 */
     .draw-quick-buttons {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -275,7 +317,6 @@
       z-index: 950;
     }
 
-    /* 작업 확인 팝업 */
     .action-confirm-popup {
       background:#fff;
       border-radius:14px;
@@ -300,7 +341,6 @@
       gap:10px;
     }
 
-    /* 비밀번호 팝업 */
     .password-popup {
       background:#fff;
       border-radius:14px;
@@ -339,47 +379,23 @@
       gap:10px;
     }
 
-    /* 우측 기록 패널 */
-    .history-panel {
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      width: 200px;
-      max-height: 60vh;
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      padding: 10px 12px;
-      font-size: 13px;
-      z-index: 900;
-      display: flex;
-      flex-direction: column;
-    }
-    .history-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: var(--color-text);
-    }
-    .history-list {
-      overflow-y: auto;
-      border-top: 1px solid #eee;
-      padding-top: 6px;
-    }
-    .history-item {
-      padding: 2px 0;
-    }
-    .history-empty {
-      color: #999;
+    /* ✅ 모바일: 기록은 아래로 (본판 아래) */
+    @media (max-width: 980px) {
+      .layout { flex-direction: column; }
+      .container { max-width: none; }
+      .history-panel {
+        width: 100%;
+        flex: 0 0 auto;
+        position: static;
+        max-height: none;
+        overflow: visible;
+      }
     }
 
+    /* ✅ 모바일에서도 10×5 고정(50개). 너무 작아질 수 있어서 크기/간격 축소 */
     @media (max-width: 600px) {
-      body { padding: 12px; }
+      body { padding: 14px; }
       .container { padding: 18px 16px 24px; }
-
-      /* 모바일에서도 50개(10×5)가 고정으로 보이도록 */
       .tickets {
         grid-template-columns: repeat(10, minmax(0, 1fr));
         gap: 4px;
@@ -389,60 +405,56 @@
         padding: 0;
         border-radius: 6px;
       }
-
-      .history-panel {
-        position: static;
-        width: 100%;
-        max-height: none;
-        margin-top: 10px;
-      }
     }
 
-@media (prefers-reduced-motion: reduce) {
+    @media (prefers-reduced-motion: reduce) {
       .ticket { transition: none; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Lucky Draw</h1>
-    <p class="desc">
-      한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.
-    </p>
+  <div class="layout">
+    <!-- ✅ 본판(왼쪽) -->
+    <div class="container">
+      <h1>Lucky Draw</h1>
+      <p class="desc">
+        한 번 뽑을 때마다 결과만 표시되고, 이미 뽑은 번호는 다시 뽑을 수 없습니다.
+      </p>
 
-    <div class="page-info">
-      <div class="page-buttons">
-        <button class="btn" id="prevBtn" type="button">이전</button>
-        <button class="btn" id="nextBtn" type="button">다음</button>
+      <div class="page-info">
+        <div class="page-buttons">
+          <button class="btn" id="prevBtn" type="button">이전</button>
+          <button class="btn" id="nextBtn" type="button">다음</button>
+        </div>
+        <button class="btn" id="setDrawBtn" type="button">횟수 입력</button>
       </div>
-      <button class="btn" id="setDrawBtn" type="button">횟수 입력</button>
+
+      <div class="tickets" id="ticketsContainer"></div>
+
+      <div class="result-box" id="resultBox" aria-live="polite">복권을 선택해 보세요.</div>
+
+      <div class="tool-buttons">
+        <button class="btn" id="resetBtn" type="button">전체 다시 섞기</button>
+        <button class="btn" id="exportBtn" type="button">기록 파일로 저장</button>
+        <button class="btn" id="importBtn" type="button">기록 파일 불러오기</button>
+        <input type="file" id="importInput" style="display:none" accept="application/json">
+      </div>
     </div>
 
-    <div class="tickets" id="ticketsContainer"></div>
-
-    <div class="result-box" id="resultBox" aria-live="polite">복권을 선택해 보세요.</div>
-
-    <div class="tool-buttons">
-      <button class="btn" id="resetBtn" type="button">전체 다시 섞기</button>
-      <button class="btn" id="exportBtn" type="button">기록 파일로 저장</button>
-      <button class="btn" id="importBtn" type="button">기록 파일 불러오기</button>
-      <input type="file" id="importInput" style="display:none" accept="application/json">
-    </div>
+    <!-- ✅ 기록(오른쪽) - 팝업/고정 오버레이가 아니라 "옆 칼럼" -->
+    <aside class="history-panel" aria-label="뽑은 기록">
+      <div class="history-header">
+        <span>뽑은 기록</span>
+        <span id="historyCount">0/0</span>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty">아직 기록이 없습니다.</div>
+      </div>
+    </aside>
   </div>
 
   <!-- 우측 하단 히든 버튼 -->
   <div id="remainBtn" class="remain-hidden-hotspot" aria-label="잔여 수량 보기" role="button" tabindex="0"></div>
-
-  <!-- 우측/모바일 아래 기록 패널 -->
-  <div class="history-panel">
-    <div class="history-header">
-      <span>뽑은 기록</span>
-      <span id="historyCount">0/0</span>
-    </div>
-    <div class="history-list" id="historyList">
-      <div class="history-empty">아직 기록이 없습니다.</div>
-    </div>
-  </div>
 
   <!-- 결과 팝업 -->
   <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupMessage">
@@ -536,14 +548,7 @@
     const TOTAL_TICKETS = 700;
     const PAGE_SIZE = 50;
 
-    const gradeCounts = {
-      1: 4,
-      2: 9,
-      3: 24,
-      4: 36,
-      5: 227,
-      6: 320
-    };
+    const gradeCounts = { 1: 4, 2: 9, 3: 24, 4: 36, 5: 227, 6: 320 };
     const EXTRA_RETRY = 80;
 
     // (주의) 실수방지용. 보안 목적이 아님.
