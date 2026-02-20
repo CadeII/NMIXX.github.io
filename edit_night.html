@@ -14,16 +14,22 @@
 
     * { box-sizing: border-box; }
 
-    html, body {
-      overscroll-behavior: none; /* 스크롤 체인/바운스 최소화 */
-    }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       margin: 0;
       padding: 20px;
       background: var(--bg);
       color: var(--color-text);
+    }
+
+    /* ====== 태블릿/모바일에서 화면 밀림 최소화 ====== */
+    html, body {
+      overscroll-behavior: none; /* 스크롤 체인/바운스 최소화 */
+    }
+
+    /* 보드(티켓 영역)에서는 기본 pan/zoom 제스처를 막고, 스와이프는 JS로 처리 */
+    #ticketsContainer {
+      touch-action: none;
     }
 
     /* ✅ 레이아웃: 본판(왼쪽) + 기록(오른쪽), 겹치지 않게 */
@@ -101,11 +107,6 @@
       gap: 8px;
       margin-bottom: 16px;
     }
-    /* 보드(티켓 영역)에서는 브라우저 기본 제스처(스크롤/줌)를 막고, 우리가 스와이프를 처리 */
-    #ticketsContainer {
-      touch-action: none;
-    }
-
 
     .ticket {
       padding: 10px 4px;
@@ -200,6 +201,15 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      /* 팝업이 열린 상태에서: 확대/축소/드래그(스크롤) 제스처를 최대한 차단 */
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+
+    /* overlay 자식 요소에서 시작된 터치도 기본 pan/zoom이 나오지 않도록 */
+    .popup-overlay,
+    .popup-overlay * {
+      touch-action: none;
     }
 
     .popup {
@@ -221,14 +231,23 @@
       margin-bottom: 20px;
       white-space: pre-line;
     }
+    .popup video {
+      display: block;
+      margin: 0 auto 18px; /* ✅ 영상과 버튼 사이 간격 */
+      border-radius: 14px; /* (선택) 영상 모서리 둥글게 */
+    }
+
     .popup button {
-      padding: 8px 20px;
+      padding: 14px 44px;   /* ✅ 버튼 키움 */
+      min-width: 160px;
+      min-height: 52px;
       border-radius: 999px;
       border: none;
       background: var(--color-primary);
-      color:#fff;
-      font-size:14px;
-      cursor:pointer;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     .confirm-popup {
@@ -325,6 +344,49 @@
       cursor: pointer;
       z-index: 950;
     }
+
+    .admin-hidden-hotspot {
+      position: fixed;
+      left: 10px;
+      bottom: 10px;
+      width: 80px;
+      height: 40px;
+      background: transparent;
+      cursor: pointer;
+      z-index: 950;
+    }
+
+    /* ✅ 관리자 메뉴 팝업 */
+    .admin-menu-popup {
+      background:#fff;
+      border-radius:14px;
+      padding:28px 20px 18px;
+      max-width:420px;
+      width:calc(100% - 40px);
+      text-align:center;
+      box-shadow:0 14px 35px rgba(0,0,0,0.3);
+    }
+    .admin-menu-title {
+      font-size:22px;
+      font-weight:600;
+      margin-bottom:14px;
+    }
+    .admin-menu-buttons {
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:stretch;
+    }
+    .admin-menu-buttons .btn {
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+    .admin-menu-close {
+      background:#e0e0e0;
+      border-color:#e0e0e0;
+      color:#333;
+    }
+
 
     .action-confirm-popup {
       background:#fff;
@@ -442,12 +504,8 @@
 
       <div class="result-box" id="resultBox" aria-live="polite">복권을 선택해 보세요.</div>
 
-      <div class="tool-buttons">
-        <button class="btn" id="resetBtn" type="button">전체 다시 섞기</button>
-        <button class="btn" id="exportBtn" type="button">기록 파일로 저장</button>
-        <button class="btn" id="importBtn" type="button">기록 파일 불러오기</button>
+      <!-- ✅ 하단 버튼(전체 다시 섞기/저장/불러오기)은 숨김 → 좌측 하단 관리자 메뉴에서 실행 -->
         <input type="file" id="importInput" style="display:none" accept="application/json">
-      </div>
     </div>
 
     <!-- ✅ 기록(오른쪽) - 팝업/고정 오버레이가 아니라 "옆 칼럼" -->
@@ -462,8 +520,26 @@
     </aside>
   </div>
 
-  <!-- 우측 하단 히든 버튼 -->
+  
+  <!-- 좌측 하단 관리자 메뉴(투명 버튼) -->
+  <div id="adminBtn" class="admin-hidden-hotspot" aria-label="관리자 메뉴" role="button" tabindex="0"></div>
+
+<!-- 우측 하단 히든 버튼 -->
   <div id="remainBtn" class="remain-hidden-hotspot" aria-label="잔여 수량 보기" role="button" tabindex="0"></div>
+
+  <!-- ✅ 관리자 메뉴 팝업 (비밀번호 통과 후 열림) -->
+  <div class="popup-overlay" id="adminMenuOverlay" role="dialog" aria-modal="true" aria-labelledby="adminMenuTitle">
+    <div class="admin-menu-popup">
+      <div class="admin-menu-title" id="adminMenuTitle">관리자 메뉴</div>
+      <div class="admin-menu-buttons">
+        <button class="btn" id="adminResetBtn" type="button">전체 다시 섞기</button>
+        <button class="btn" id="adminExportBtn" type="button">기록 파일로 저장</button>
+        <button class="btn" id="adminImportBtn" type="button">기록 파일 불러오기</button>
+        <button class="btn admin-menu-close" id="adminCloseBtn" type="button">닫기</button>
+      </div>
+    </div>
+  </div>
+
 
   <!-- 결과 팝업 -->
   <div class="popup-overlay" id="popupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle" aria-describedby="popupMessage">
@@ -578,18 +654,17 @@
       }, { passive: false });
     })();
 
-
     // ====== 설정 ======
-    const TOTAL_TICKETS = 700;
+    const TOTAL_TICKETS = 500;
     const PAGE_SIZE = 50;
 
-    const gradeCounts = { 1: 4, 2: 9, 3: 24, 4: 36, 5: 227, 6: 320 };
+    const gradeCounts = { 1: 3, 2: 6, 3: 16, 4: 25, 5: 150, 6: 220 };
     const EXTRA_RETRY = 80;
 
     // (주의) 실수방지용. 보안 목적이 아님.
     const PASSWORD = '0619';
 
-    const STORAGE_KEY = 'lotto_day_state_v1';
+    const STORAGE_KEY = 'lotto_night_state_v1';
 
     // ====== 상태 ======
     let tickets = [];
@@ -603,6 +678,9 @@
     let drawHistory = [];
     let historyLimit = 0;
 
+    let adminUnlocked = false; // ✅ 관리자 메뉴 잠금 해제 상태(세션)
+    let afterPasswordSuccess = null; // ✅ 비밀번호 성공 후 실행할 콜백
+
     // ====== DOM 캐시 ======
     const $ = (id) => document.getElementById(id);
 
@@ -612,13 +690,15 @@
       setDrawBtn: $('setDrawBtn'),
       ticketsContainer: $('ticketsContainer'),
       resultBox: $('resultBox'),
-
-      resetBtn: $('resetBtn'),
-      exportBtn: $('exportBtn'),
-      importBtn: $('importBtn'),
       importInput: $('importInput'),
 
+      adminBtn: $('adminBtn'),
       remainBtn: $('remainBtn'),
+      adminMenuOverlay: $('adminMenuOverlay'),
+      adminResetBtn: $('adminResetBtn'),
+      adminExportBtn: $('adminExportBtn'),
+      adminImportBtn: $('adminImportBtn'),
+      adminCloseBtn: $('adminCloseBtn'),
 
       historyList: $('historyList'),
       historyCount: $('historyCount'),
@@ -681,12 +761,53 @@
       return overlayEl && overlayEl.style.display === 'flex';
     }
 
+    // 팝업이 열려 있을 때 배경(페이지)이 드래그로 밀리거나 스크롤되는 것을 방지
+    let scrollLockCount = 0;
+    let scrollLockTop = 0;
+
+    function lockScroll() {
+      scrollLockCount += 1;
+      if (scrollLockCount !== 1) return;
+
+      scrollLockTop = window.scrollY || document.documentElement.scrollTop || 0;
+      // iOS 포함: overflow:hidden만으로는 부족한 경우가 있어 body를 fixed로 잠금
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollLockTop}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.width = '100%';
+    }
+
+    function unlockScroll() {
+      if (scrollLockCount <= 0) {
+        scrollLockCount = 0;
+        return;
+      }
+      scrollLockCount -= 1;
+      if (scrollLockCount !== 0) return;
+
+      const top = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+
+      const parsed = parseInt(top || '0', 10);
+      const y = Number.isFinite(parsed) ? -parsed : scrollLockTop;
+      window.scrollTo(0, y);
+    }
+
     function openOverlay(overlayEl) {
-      if (overlayEl) overlayEl.style.display = 'flex';
+      if (!overlayEl) return;
+      overlayEl.style.display = 'flex';
+      lockScroll();
     }
 
     function closeOverlay(overlayEl) {
-      if (overlayEl) overlayEl.style.display = 'none';
+      if (!overlayEl) return;
+      overlayEl.style.display = 'none';
+      unlockScroll();
     }
 
     function stopAllVideos() {
@@ -696,6 +817,18 @@
         v.currentTime = 0;
         v.style.display = 'none';
       });
+    }
+
+    function openAdminMenu() {
+      if (!els.adminMenuOverlay) return;
+      openOverlay(els.adminMenuOverlay);
+      if (els.adminResetBtn) els.adminResetBtn.focus();
+    }
+
+    function closeAdminMenu(lock = true) {
+      if (!els.adminMenuOverlay) return;
+      closeOverlay(els.adminMenuOverlay);
+      if (lock) adminUnlocked = false;
     }
 
     function setIdleMessage() {
@@ -779,7 +912,7 @@
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'lotto_day_state.json';
+      a.download = 'lotto_night_state.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -1047,7 +1180,8 @@
       closeOverlay(els.actionConfirmOverlay);
     }
 
-    function openPasswordPopup() {
+    function openPasswordPopup(next) {
+      afterPasswordSuccess = (typeof next === 'function') ? next : null;
       els.passwordInput.value = '';
       els.passwordHint.textContent = '';
       openOverlay(els.passwordOverlay);
@@ -1085,12 +1219,40 @@
         return;
       }
 
+      const next = afterPasswordSuccess;
+      afterPasswordSuccess = null;
+
       closePasswordPopup();
+
+      if (next) {
+        next();
+        return;
+      }
+
       executeAction();
     }
 
     // ====== 이벤트 바인딩 ======
     document.addEventListener('DOMContentLoaded', () => {
+      // 팝업(오버레이) 위에서 확대/축소/드래그로 화면이 밀리는 것을 방지
+      // - 스크롤 잠금은 openOverlay/closeOverlay에서 처리
+      // - 여기서는 overlay 자체의 기본 터치 동작(스크롤/패닝)을 추가로 차단
+      document.querySelectorAll('.popup-overlay').forEach(overlay => {
+        // 한 손 드래그로 배경이 움직이는 것 방지
+        overlay.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+        }, { passive: false });
+
+        // 멀티터치(핀치) 시도도 overlay에서 한 번 더 차단
+        overlay.addEventListener('touchstart', (e) => {
+          if (e.touches && e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+
+        // 트랙패드/마우스 휠 스크롤로 배경이 움직이는 것 방지(데스크톱에서도 안전)
+        overlay.addEventListener('wheel', (e) => {
+          e.preventDefault();
+        }, { passive: false });
+      });
       els.prevBtn.addEventListener('click', () => {
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
@@ -1103,9 +1265,30 @@
         saveState();
       });
 
-      els.resetBtn.addEventListener('click', () => openActionConfirm('reset'));
-      els.exportBtn.addEventListener('click', () => openActionConfirm('export'));
-      els.importBtn.addEventListener('click', () => openActionConfirm('import'));
+      // ✅ 좌측 하단 관리자 메뉴(투명 버튼) → 비밀번호 → 관리자 메뉴 오픈
+      els.adminBtn.addEventListener('click', () => {
+        openPasswordPopup(() => {
+          adminUnlocked = true;
+          openAdminMenu();
+        });
+      });
+      els.adminBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          els.adminBtn.click();
+        }
+      });
+
+      // ✅ 관리자 메뉴 버튼(3개 기능)
+      els.adminResetBtn.addEventListener('click', () => openActionConfirm('reset'));
+      els.adminExportBtn.addEventListener('click', () => openActionConfirm('export'));
+      els.adminImportBtn.addEventListener('click', () => openActionConfirm('import'));
+
+      // 닫기(닫으면 다시 잠금)
+      els.adminCloseBtn.addEventListener('click', () => closeAdminMenu(true));
+      els.adminMenuOverlay.addEventListener('click', (e) => {
+        if (e.target === els.adminMenuOverlay) closeAdminMenu(true);
+      });
 
       // 히든 버튼(잔여 수량)
       els.remainBtn.addEventListener('click', () => openActionConfirm('remain'));
@@ -1173,7 +1356,15 @@
       });
       els.actionOkBtn.addEventListener('click', () => {
         closeActionConfirm();
-        if (pendingAction) openPasswordPopup();
+        if (!pendingAction) return;
+
+        // ✅ 관리자 메뉴에서 들어온 경우: 비밀번호 1회만 입력
+        if (adminUnlocked) {
+          executeAction();
+          return;
+        }
+
+        openPasswordPopup(() => executeAction());
       });
       els.actionConfirmOverlay.addEventListener('click', (e) => {
         if (e.target === els.actionConfirmOverlay) {
@@ -1185,12 +1376,14 @@
       // 비밀번호 팝업
       els.passwordCancelBtn.addEventListener('click', () => {
         pendingAction = null;
+        afterPasswordSuccess = null;
         closePasswordPopup();
       });
       els.passwordOkBtn.addEventListener('click', checkPasswordAndRun);
       els.passwordOverlay.addEventListener('click', (e) => {
         if (e.target === els.passwordOverlay) {
           pendingAction = null;
+          afterPasswordSuccess = null;
           closePasswordPopup();
         }
       });
@@ -1199,6 +1392,7 @@
       let touchStartX = null;
       let touchStartY = null;
       const SWIPE_THRESHOLD = 50;
+
       // 보드(티켓 영역)에서 스와이프할 때 페이지가 밀리지 않도록 기본 스크롤을 차단
       // (탭은 touchmove가 발생하지 않아 정상 동작)
       els.ticketsContainer.addEventListener('touchmove', (e) => {
@@ -1232,6 +1426,7 @@
         // ESC: 위에서부터 닫기(우선순위)
         if (e.key === 'Escape') {
           if (isOpen(els.passwordOverlay)) { e.preventDefault(); els.passwordCancelBtn.click(); return; }
+          if (isOpen(els.adminMenuOverlay)) { e.preventDefault(); closeAdminMenu(true); return; }
           if (isOpen(els.actionConfirmOverlay)) { e.preventDefault(); els.actionCancelBtn.click(); return; }
           if (isOpen(els.drawOverlay)) { e.preventDefault(); els.drawCancelBtn.click(); return; }
           if (isOpen(els.confirmOverlay)) { e.preventDefault(); cancelSelect(); return; }
