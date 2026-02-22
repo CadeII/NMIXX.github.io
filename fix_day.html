@@ -305,12 +305,16 @@
 
     .draw-quick-buttons {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      /* ✅ (모바일 overflow 방지) */
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
       margin-bottom: 16px;
     }
     .draw-quick-buttons button {
-      width: 64px;
+      /* ✅ (모바일에서 칸이 좁으면 버튼 폭도 자동으로 줄어들게) */
+      width: 100%;
+      max-width: 64px;
+
       height: 64px;
       margin: 0 auto;
       border-radius: 10px;
@@ -524,7 +528,7 @@
   <!-- 좌측 하단 관리자 메뉴(투명 버튼) -->
   <div id="adminBtn" class="admin-hidden-hotspot" aria-label="관리자 메뉴" role="button" tabindex="0"></div>
 
-<!-- 우측 하단 히든 버튼 -->
+  <!-- 우측 하단 히든 버튼 -->
   <div id="remainBtn" class="remain-hidden-hotspot" aria-label="잔여 수량 보기" role="button" tabindex="0"></div>
 
   <!-- ✅ 관리자 메뉴 팝업 (비밀번호 통과 후 열림) -->
@@ -588,6 +592,8 @@
         <button type="button" data-count="8">8</button>
         <button type="button" data-count="9">9</button>
         <button type="button" data-count="10">10</button>
+        <button type="button" data-count="15">15</button>
+        <button type="button" data-count="20">20</button>
       </div>
       <div class="draw-buttons">
         <button class="btn" id="drawCancelBtn" type="button">취소</button>
@@ -1253,6 +1259,7 @@
           e.preventDefault();
         }, { passive: false });
       });
+
       els.prevBtn.addEventListener('click', () => {
         currentPage = currentPage > 1 ? currentPage - 1 : maxPage;
         renderPage();
@@ -1334,7 +1341,7 @@
         }
       });
 
-      // 1~10 선택 버튼 (이벤트 위임)
+      // 1~10 (+15/+20 포함) 선택 버튼 (이벤트 위임)
       els.drawQuickButtons.addEventListener('click', (e) => {
         const btn = e.target.closest('button[data-count]');
         if (!btn) return;
